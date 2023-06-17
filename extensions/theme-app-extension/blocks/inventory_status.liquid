@@ -1,0 +1,144 @@
+{% comment %}
+   {% assign variant = product.selected_or_first_available_variant %}
+  {% assign inventory_quantity = variant.inventory_quantity %}
+  {% assign inventory_policy = variant.inventory_policy %}
+  {{ inventory_quantity }}
+  {{ inventory_policy }}
+  {% if inventory_quantity != blank %}
+    {% assign custom_message = block.settings.inventory_low_status | replace: '{number}', inventory_quantity %}
+    {% if custom_message != blank %}
+      <div>{{ custom_message }}</div>
+    {% endif %}
+  {% endif %}
+  {% if block.settings.show_instock_status == true %}
+  {% endif %}
+{% endcomment %}
+
+{% comment %}
+   {% if custom_message != blank %}
+    <div>{{ custom_message }}!{{ inventory_data.inventory_quantity }}</div>
+  {% endif %}
+  {{ block.settings | json }}
+  {{ product | json }}
+  {% if inventory_data.inventory_policy == 'continue' %}
+    <span style="color:{{ block.settings.colour }}">
+      {{ inventory_data.inventory_quantity }}
+    </span>
+    <div>
+      {{ block.settings.pre_order_status }}
+    </div>
+  {% endif %}
+{% endcomment %}
+
+<style>
+  .icon_inventory:after,
+  .icon_inventory:before {
+    background: #54c63a;
+  }
+  .inventory_low .icon_inventory:after,
+  .inventory_low .icon_inventory:before {
+    background: #f4af29;
+  }
+  .inventory_low {
+    color: #f4af29;
+  }
+</style>
+{{ 'inventory-customize-order-app.css' | asset_url | stylesheet_tag }}
+
+{% schema %}
+{
+  "name": "Inventory Status",
+  "target": "section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "In Stock status"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_instock_status",
+      "label": "Show In Stock status"
+    },
+    {
+      "type": "radio",
+      "id": "instock_icon",
+      "label": "Icon Type",
+      "options": [
+        {
+          "value": "circle",
+          "label": "Circle"
+        },
+        {
+          "value": "custom",
+          "label": "Custom"
+        },
+        {
+          "value": "none",
+          "label": "None"
+        }
+      ],
+      "default": "circle"
+    },
+    { "type": "color", "id": "instock_icon_colour", "label": "Icon Colour", "default": "#54c63a" },
+    {
+      "type": "text",
+      "id": "instock_status",
+      "label": "In Stock Status",
+      "default": "In stock"
+    },
+
+    {
+      "type": "header",
+      "content": "Inventory Low status"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_inventory_low_status",
+      "label": "Show Inventory Low status"
+    },
+    {
+      "type": "radio",
+      "id": "inventory_low_icon",
+      "label": "Icon Type",
+      "options": [
+        {
+          "value": "circle",
+          "label": "Circle"
+        },
+        {
+          "value": "custom",
+          "label": "Custom"
+        },
+        {
+          "value": "none",
+          "label": "None"
+        }
+      ],
+      "default": "circle"
+    },
+    { "type": "color", "id": "inventory_low_icon_colour", "label": "Icon Colour", "default": "#f4af29" },
+    {
+      "type": "text",
+      "id": "inventory_low_status",
+      "label": "Inventory Low Status",
+      "default": "Only {number} in stock"
+    },
+
+    {
+      "type": "header",
+      "content": "Inventory Low status"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_pre_order_status",
+      "label": "Show Pre Order status"
+    },
+    {
+      "type": "text",
+      "id": "pre_order_status",
+      "label": "Pre Order Status",
+      "default": "🎉 Pre Order Is Available!"
+    }
+  ]
+}
+{% endschema %}
