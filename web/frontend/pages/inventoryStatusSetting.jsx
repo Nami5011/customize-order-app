@@ -2,26 +2,45 @@ import { Card, Page, Layout, TextContainer, FormLayout, TextField, Button, Check
 import { TitleBar } from "@shopify/app-bridge-react";
 import { useTranslation, Trans } from "react-i18next";
 import { useState, useEffect, useCallback } from 'react';
+import { useAppQuery, useAuthenticatedFetch } from "../hooks";
 
 function InventoryStatusSettings() {
-	const [instockStatusMessage, setInstockStatusMessage] = useState('');
+	const fetch = useAuthenticatedFetch();
 	const [checkedInstock, setCheckedInStock] = useState(true);
-	const [selectedIconType, setSelectedIconType] = useState(['icon']);
+	const [instockIconType, setInstockIconType] = useState(['icon']);
 	const [instockIconColor, setInstockIconColor] = useState({
 		hue: 120,
 		brightness: 1,
 		saturation: 1,
 	});
-	const { t } = useTranslation();
+	const [instockStatusMessage, setInstockStatusMessage] = useState('');
+	const handleSubmitSave = async () => {
+		let data = {};
+		let value = {};
+		data.namespace = "customize-order-app";
+		data.key = "inventoryStatusSettings";
+		value.showInstockFlg = checkedInstock;
+		value.instockIconType = instockIconType;
+		value.instockIconColor = instockIconColor;
+		value.instockStatusMessage = instockStatusMessage;
+		data.value = JSON.stringify(value);
 
-	// const handleChange = useCallback(() => setSelectedIconType(value), []);
-	// useEffect(() => {
-	// }, []);
+		// call the api here
+		const response = await fetch('/api/metafields', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify(data),
+		});
 
-	// const handleInputChange = (value) => {
-	// 	setInstockStatusMessage(value);
-	// };
-	const handleSubmit = async () => {
+		if (!response.ok) {
+			// handle error
+			console.error('Error:', response);
+			console.error('statusText:', response.statusText);
+		} else {
+			console.log('response:', response);
+		}
 	};
 
 	return (
@@ -44,10 +63,10 @@ function InventoryStatusSettings() {
 											{ label: 'Hide', value: 'none' },
 										]}
 										allowMultiple={false}
-										selected={selectedIconType}
-										onChange={setSelectedIconType}
+										selected={instockIconType}
+										onChange={setInstockIconType}
 									/>
-									<Collapsible open={selectedIconType == 'icon'}>
+									<Collapsible open={instockIconType == 'icon'}>
 										<ColorPicker onChange={setInstockIconColor} color={instockIconColor} />
 									</Collapsible>
 									<TextField
@@ -57,7 +76,7 @@ function InventoryStatusSettings() {
 									/>
 								</Collapsible>
 
-								<Button onClick={handleSubmit}>Save</Button>
+								<Button onClick={handleSubmitSave}>Save</Button>
 							</FormLayout>
 						</TextContainer>
 					</Card>
