@@ -1,11 +1,17 @@
-import { Card, Page, Layout, TextContainer, FormLayout, TextField, Button, Checkbox, Collapsible, ChoiceList, ColorPicker } from "@shopify/polaris";
+import { LegacyCard, Page, Layout, TextContainer, FormLayout, TextField, Button, Checkbox, Collapsible, ChoiceList, ColorPicker } from "@shopify/polaris";
 import { TitleBar } from "@shopify/app-bridge-react";
 import { useTranslation, Trans } from "react-i18next";
 import { useState, useEffect, useCallback } from 'react';
 import { useAppQuery, useAuthenticatedFetch } from "../hooks";
+import { apiPath, apiParam } from '../../common-variable';
 
 function InventoryStatusSettings() {
 	const fetch = useAuthenticatedFetch();
+	const metafieldsApiPath = apiPath.metafields;
+	const namespace = apiParam.metafields.namespace;
+	const key = apiParam.metafields.key;
+	// initialize
+	// const [metafieldId, setMetafieldId] = useState('');
 	const [checkedInstock, setCheckedInStock] = useState(true);
 	const [instockIconType, setInstockIconType] = useState(['icon']);
 	const [instockIconColor, setInstockIconColor] = useState({
@@ -14,32 +20,68 @@ function InventoryStatusSettings() {
 		saturation: 1,
 	});
 	const [instockStatusMessage, setInstockStatusMessage] = useState('');
+
+	const init = async () => {
+		try {
+			console.log('fetch: ' + metafieldsApiPath + '?namespace=' + namespace + '&key=' + key);
+			let metafields = await fetch(metafieldsApiPath + '?namespace=' + namespace + '&key=' + key);
+			let value = {};
+			if (metafields.ok) {
+				let data = await metafields.json();
+				if (data && data.data.length > 0 && data.data[0].value) {
+					data = data.data[0];
+					data.value = JSON.parse(data.value);
+					value = data.value;
+				} else {
+					return;
+				}
+				console.log('response data:', data);
+				// setMetafieldId(String(data.id));
+				// set the data in form
+				setCheckedInStock(value.showInstockFlg);
+				setInstockIconType(value.instockIconType);
+				setInstockIconColor(value.instockIconColor);
+				setInstockStatusMessage(value.instockStatusMessage);
+			} else {
+				// handle error
+				console.error('Error:', metafields);
+			}
+		} catch (err) {
+			console.error('Catch Error:', err);
+
+		}
+	}
+
+	useEffect(() => {
+		init();
+	}, []);
+
 	const handleSubmitSave = async () => {
 		let data = {};
 		let value = {};
-		data.namespace = "customize-order-app";
-		data.key = "inventoryStatusSettings";
+		data.namespace = namespace;
+		data.key = key;
 		value.showInstockFlg = checkedInstock;
 		value.instockIconType = instockIconType;
 		value.instockIconColor = instockIconColor;
 		value.instockStatusMessage = instockStatusMessage;
-		data.value = JSON.stringify(value);
+		data.value = value;
 
 		// call the api here
-		const response = await fetch('/api/metafields', {
+		const response = await fetch(metafieldsApiPath, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
 			},
 			body: JSON.stringify(data),
 		});
-
-		if (!response.ok) {
+		if (response.ok) {
+			console.log('response:');
+			console.log('response:', response);
+		} else {
 			// handle error
 			console.error('Error:', response);
 			console.error('statusText:', response.statusText);
-		} else {
-			console.log('response:', response);
 		}
 	};
 
@@ -47,7 +89,7 @@ function InventoryStatusSettings() {
 		<Page title="Inventory Status Settings">
 			<Layout>
 				<Layout.Section>
-					<Card sectioned>
+					<LegacyCard sectioned>
 						<TextContainer>
 							<FormLayout>
 								<Checkbox
@@ -79,7 +121,7 @@ function InventoryStatusSettings() {
 								<Button onClick={handleSubmitSave}>Save</Button>
 							</FormLayout>
 						</TextContainer>
-					</Card>
+					</LegacyCard>
 				</Layout.Section>
 			</Layout>
 		</Page>

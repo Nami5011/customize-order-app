@@ -57,10 +57,10 @@ app.get("/api/products/count", async (_req, res) => {
 
 // Create Shop Metafields 
 app.post("/api/metafields", async (req, res) => {
-    try {
-        const metafield = new shopify.api.rest.Metafield(
-            {session: res.locals.shopify.session}
-        );
+	try {
+		const metafield = new shopify.api.rest.Metafield(
+			{session: res.locals.shopify.session}
+		);
 		metafield.namespace = req.body.namespace;
 		metafield.key = req.body.key;
 		metafield.value = JSON.stringify(req.body.value);
@@ -68,11 +68,26 @@ app.post("/api/metafields", async (req, res) => {
 		const response = await metafield.save({
 			update: true,
 		});
-        res.status(200).json(response);
-    } catch(err) {
-        console.error(err);
-        res.status(500).json(err);
-    }
+		res.status(200).json(response);
+	} catch(err) {
+		console.error(err);
+		res.status(500).json(err);
+	}
+});
+
+app.get("/api/metafields", async (req, res) => {
+	const { namespace, key } = req.query;
+	try {
+		let metafield = await shopify.api.rest.Metafield.all({
+			session: res.locals.shopify.session,
+			namespace, // Pass the namespace parameter to the Shopify API
+			key, // Pass the key parameter to the Shopify API
+		});
+		res.status(200).send(metafield);
+	} catch(err) {
+		console.error(err);
+		res.status(500).json(err);
+	}
 });
 
 app.get("/api/products/create", async (_req, res) => {
