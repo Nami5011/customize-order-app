@@ -98,27 +98,30 @@ function InventoryStatusSettings() {
 									onChange={setCheckedInStock}
 								/>
 								<Collapsible open={checkedInstock}>
-									<ChoiceList
-										title="In Stock Icon"
-										choices={[
-											{ label: 'Show', value: 'icon' },
-											{ label: 'Hide', value: 'none' },
-										]}
-										allowMultiple={false}
-										selected={instockIconType}
-										onChange={setInstockIconType}
-									/>
-									<Collapsible open={instockIconType == 'icon'}>
-										<ColorPicker onChange={setInstockIconColor} color={instockIconColor} />
-									</Collapsible>
-									<TextField
-										label="In Stock Status Message"
-										value={instockStatusMessage}
-										onChange={setInstockStatusMessage}
-									/>
+									<div style={{ margin: '0 var(--p-space-5)', }}>
+										<ChoiceList
+											title="In Stock Icon"
+											choices={[
+												{ label: 'Show', value: 'icon' },
+												{ label: 'Hide', value: 'none' },
+											]}
+											allowMultiple={false}
+											selected={instockIconType}
+											onChange={setInstockIconType}
+										/>
+										<Collapsible open={instockIconType == 'icon'}>
+											<ColorPicker onChange={setInstockIconColor} color={instockIconColor} />
+										</Collapsible>
+										<TextField
+											label="In Stock Status Message"
+											value={instockStatusMessage}
+											onChange={setInstockStatusMessage}
+										/>
+									</div>
+
 								</Collapsible>
 
-								<Button onClick={handleSubmitSave}>Save</Button>
+								<Button primary onClick={handleSubmitSave}>Save</Button>
 							</FormLayout>
 						</TextContainer>
 					</LegacyCard>
