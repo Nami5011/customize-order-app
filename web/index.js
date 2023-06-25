@@ -7,6 +7,8 @@ import serveStatic from "serve-static";
 import shopify from "./shopify.js";
 import productCreator from "./product-creator.js";
 import GDPRWebhookHandlers from "./gdpr.js";
+import { metafieldStorefrontVisibilities, metafieldStorefrontVisibilityCreate } from "./graphql/metafieldStorefrontVisibilities.js";
+import { apiPath } from "./common-variable.js";
 
 const PORT = parseInt(
   process.env.BACKEND_PORT || process.env.PORT || "3000",
@@ -56,7 +58,7 @@ app.get("/api/products/count", async (_req, res) => {
 //   });
 
 // Create Shop Metafields 
-app.post("/api/metafields", async (req, res) => {
+app.post(apiPath.metafields, async (req, res) => {
 	try {
 		const metafield = new shopify.api.rest.Metafield(
 			{session: res.locals.shopify.session}
@@ -75,7 +77,7 @@ app.post("/api/metafields", async (req, res) => {
 	}
 });
 
-app.get("/api/metafields", async (req, res) => {
+app.get(apiPath.metafields, async (req, res) => {
 	const { namespace, key } = req.query;
 	try {
 		let metafield = await shopify.api.rest.Metafield.all({
@@ -102,6 +104,44 @@ app.get("/api/products/create", async (_req, res) => {
     error = e.message;
   }
   res.status(status).send({ success: status === 200, error });
+});
+
+app.post(apiPath.metafieldStorefrontVisibilities, async (_req, res) => {
+	let status = 200;
+	let error = null;
+
+	try {
+		const data = await metafieldStorefrontVisibilities(
+			res.locals.shopify.session,
+			_req.body.namespace
+			);
+		res.status(200).send(data);
+	} catch (e) {
+		console.log(`Failed to process ${apiPath.metafieldStorefrontVisibilities}: ${e.message}`);
+		status = 500;
+		error = e.message;
+		res.status(500).send(error);
+	}
+	// res.status(status).send({ success: status === 200, error });
+});
+
+app.post(apiPath.metafieldStorefrontVisibilityCreate, async (_req, res) => {
+	let status = 200;
+	let error = null;
+
+	try {
+	  await metafieldStorefrontVisibilityCreate(
+			res.locals.shopify.session,
+			_req.body.namespace,
+			_req.body.key,
+			_req.body.ownerType
+			);
+	} catch (e) {
+		console.log(`Failed to process ${apiPath.metafieldStorefrontVisibilityCreate}: ${e.message}`);
+		status = 500;
+		error = e.message;
+	}
+	res.status(status).send({ success: status === 200, error });
 });
 
 app.use(shopify.cspHeaders());

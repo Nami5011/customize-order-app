@@ -44,7 +44,10 @@
   }
 </style>
 {{ 'inventory-customize-order-app.css' | asset_url | stylesheet_tag }}
-
+{% comment %}
+   "stylesheet": "my-css.css",
+  "javascript": "my-javascript.js",
+{% endcomment %}
 {% schema %}
 {
   "name": "Inventory Status",

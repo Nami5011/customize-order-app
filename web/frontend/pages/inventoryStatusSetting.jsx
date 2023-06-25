@@ -3,7 +3,7 @@ import { TitleBar } from "@shopify/app-bridge-react";
 import { useTranslation, Trans } from "react-i18next";
 import { useState, useEffect, useCallback } from 'react';
 import { useAppQuery, useAuthenticatedFetch } from "../hooks";
-import { apiPath, apiParam } from '../../common-variable';
+import { apiPath, apiParam, ownerType } from '../../common-variable';
 
 function InventoryStatusSettings() {
 	const fetch = useAuthenticatedFetch();
@@ -96,7 +96,7 @@ function InventoryStatusSettings() {
 		init();
 	}, []);
 
-	const handleSubmitSave = async () => {
+	const getSaveData = () => {
 		let data = {};
 		let value = {};
 		data.namespace = namespace;
@@ -123,22 +123,62 @@ function InventoryStatusSettings() {
 		value.msgOutOfStock = msgOutOfStock;
 
 		data.value = value;
+		return data;
+	};
 
-		// call the api to save
-		const response = await fetch(metafieldsApiPath, {
+	const callMetafieldVisiblities = async () => {
+		let data = {};
+		data.namespace = apiParam.metafields.namespace;
+		let response = await fetch(apiPath.metafieldStorefrontVisibilities, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
 			},
 			body: JSON.stringify(data),
 		});
+		return response;
+	};
+
+	const callMetafieldVisibleCreate = async () => {
+		let data = {};
+		data.namespace = apiParam.metafields.namespace;
+		data.key = apiParam.metafields.key;
+		data.ownerType = apiParam.metafields.ownerType;
+		let response = await fetch(apiPath.metafieldStorefrontVisibilities, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify(data),
+		});
+		return response;
+	};
+
+	const handleSubmitSave = async () => {
+		let data = getSaveData();
+		// call the api to save
+		let response = await fetch(metafieldsApiPath, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify(data),
+		});
+		let res_metafieldVisiblities = null;
 		if (response.ok) {
-			console.log('response:');
-			console.log('response:', response);
+			// metafield
+			console.log(`Response ${metafieldsApiPath}:`, response);
+			res_metafieldVisiblities = await callMetafieldVisiblities();
 		} else {
-			// handle error
-			console.error('Error:', response);
-			console.error('statusText:', response.statusText);
+			console.error(`Error: ${metafieldsApiPath}`, response);
+		}
+		if (response.ok && res_metafieldVisiblities !== null && res_metafieldVisiblities.ok) {
+			// metafieldStoreFrontVisibilities
+			console.log(`Response ${apiPath.metafieldStorefrontVisibilities}:`, res_metafieldVisiblities);
+			let data = await res_metafieldVisiblities.json();
+			console.log('metafieldStorefrontVisibilities data:', data);
+		} else if (res_metafieldVisiblities !== null) {
+			console.error(`Error: ${apiPath.metafieldStorefrontVisibilities}`, res_metafieldVisiblities);
 		}
 	};
 
