@@ -66,7 +66,7 @@ export async function metafieldStorefrontVisibilityCreate(
   const client = new shopify.api.clients.Graphql({ session });
 
   try {
-	await client.query({
+	const res = await client.query({
         data: {
           query: METAFIELD_STOREFRONT_VISIBILITY_CREATE,
           variables: {
@@ -78,6 +78,7 @@ export async function metafieldStorefrontVisibilityCreate(
           },
         },
       });
+	return res;
   } catch (error) {
     if (error instanceof GraphqlQueryError) {
       throw new Error(

@@ -6,6 +6,7 @@ import { useAppQuery, useAuthenticatedFetch } from "../hooks";
 import { apiPath, apiParam, ownerType } from '../../common-variable';
 
 function InventoryStatusSettings() {
+	const [isLoading, setIsLoading] = useState(true);
 	const fetch = useAuthenticatedFetch();
 	const metafieldsApiPath = apiPath.metafields;
 	const namespace = apiParam.metafields.namespace;
@@ -59,6 +60,7 @@ function InventoryStatusSettings() {
 					data.value = JSON.parse(data.value);
 					value = data.value;
 				} else {
+					setIsLoading(false);
 					return;
 				}
 				console.log('response data:', data);
@@ -87,8 +89,10 @@ function InventoryStatusSettings() {
 				// handle error
 				console.error('Error:', metafields);
 			}
+			setIsLoading(false);
 		} catch (err) {
 			console.error('Catch Error:', err);
+			setIsLoading(false);
 		}
 	}
 
@@ -129,6 +133,7 @@ function InventoryStatusSettings() {
 	const callMetafieldVisiblities = async () => {
 		let data = {};
 		data.namespace = apiParam.metafields.namespace;
+
 		let response = await fetch(apiPath.metafieldStorefrontVisibilities, {
 			method: 'POST',
 			headers: {
@@ -136,15 +141,24 @@ function InventoryStatusSettings() {
 			},
 			body: JSON.stringify(data),
 		});
-		return response;
+		if (response.ok) {
+			const res_data = await response.json();
+			const return_data = res_data.body?.data?.metafieldStorefrontVisibilities?.nodes;
+			console.log('callMetafieldVisiblities success', response);
+			console.log('callMetafieldVisiblities return_data', return_data);
+			return return_data ?? [];
+		} else {
+			console.error('callMetafieldVisiblities error', response);
+			return null;
+		}
 	};
 
 	const callMetafieldVisibleCreate = async () => {
 		let data = {};
 		data.namespace = apiParam.metafields.namespace;
 		data.key = apiParam.metafields.key;
-		data.ownerType = apiParam.metafields.ownerType;
-		let response = await fetch(apiPath.metafieldStorefrontVisibilities, {
+		data.ownerType = ownerType.shop;
+		let response = await fetch(apiPath.metafieldStorefrontVisibilityCreate, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -155,31 +169,40 @@ function InventoryStatusSettings() {
 	};
 
 	const handleSubmitSave = async () => {
+		setIsLoading(true);
 		let data = getSaveData();
 		// call the api to save
-		let response = await fetch(metafieldsApiPath, {
+		const response = await fetch(metafieldsApiPath, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
 			},
 			body: JSON.stringify(data),
 		});
-		let res_metafieldVisiblities = null;
+		let res_meta_visibilities = null;
+		// metafield
 		if (response.ok) {
-			// metafield
 			console.log(`Response ${metafieldsApiPath}:`, response);
-			res_metafieldVisiblities = await callMetafieldVisiblities();
+			res_meta_visibilities = await callMetafieldVisiblities();
 		} else {
 			console.error(`Error: ${metafieldsApiPath}`, response);
 		}
-		if (response.ok && res_metafieldVisiblities !== null && res_metafieldVisiblities.ok) {
-			// metafieldStoreFrontVisibilities
-			console.log(`Response ${apiPath.metafieldStorefrontVisibilities}:`, res_metafieldVisiblities);
-			let data = await res_metafieldVisiblities.json();
-			console.log('metafieldStorefrontVisibilities data:', data);
-		} else if (res_metafieldVisiblities !== null) {
-			console.error(`Error: ${apiPath.metafieldStorefrontVisibilities}`, res_metafieldVisiblities);
+
+		let res_meta_visibility_create = null;
+		// metafield storefront visibilities
+		if (res_meta_visibilities !== null && res_meta_visibilities.length > 0) {
+
+		} else if (res_meta_visibilities !== null && res_meta_visibilities.length === 0) {
+			res_meta_visibility_create = await callMetafieldVisibleCreate();
 		}
+
+		if (res_meta_visibility_create?.ok) {
+
+			console.log('res_meta_visibility_create', res_meta_visibility_create);
+		} else if (res_meta_visibility_create !== null) {
+			console.error(`Error: ${apiPath.metafieldStorefrontVisibilityCreate}`, res_meta_visibility_create);
+		}
+		setIsLoading(false);
 	};
 
 	// render child colour picker
@@ -239,8 +262,8 @@ function InventoryStatusSettings() {
 			primaryAction={{
 				content: "Save",
 				onAction: handleSubmitSave,
-				disabled: false,
-				loading: false,
+				disabled: isLoading,
+				loading: isLoading,
 			}}
 		>
 			<VerticalStack gap={{ xs: "8", sm: "4" }}>

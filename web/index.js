@@ -118,8 +118,8 @@ app.post(apiPath.metafieldStorefrontVisibilities, async (_req, res) => {
 		res.status(200).send(data);
 	} catch (e) {
 		console.log(`Failed to process ${apiPath.metafieldStorefrontVisibilities}: ${e.message}`);
-		status = 500;
-		error = e.message;
+		// status = 500;
+		// error = e.message;
 		res.status(500).send(error);
 	}
 	// res.status(status).send({ success: status === 200, error });
@@ -130,18 +130,20 @@ app.post(apiPath.metafieldStorefrontVisibilityCreate, async (_req, res) => {
 	let error = null;
 
 	try {
-	  await metafieldStorefrontVisibilityCreate(
+		const data = await metafieldStorefrontVisibilityCreate(
 			res.locals.shopify.session,
 			_req.body.namespace,
 			_req.body.key,
 			_req.body.ownerType
 			);
+		res.status(200).send(data);
 	} catch (e) {
 		console.log(`Failed to process ${apiPath.metafieldStorefrontVisibilityCreate}: ${e.message}`);
-		status = 500;
-		error = e.message;
+		// status = 500;
+		// error = e.message;
+		res.status(500).send(e);
 	}
-	res.status(status).send({ success: status === 200, error });
+	// res.status(status).send({ success: status === 200, error });
 });
 
 app.use(shopify.cspHeaders());
