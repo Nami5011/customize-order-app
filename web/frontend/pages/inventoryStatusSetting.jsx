@@ -1,5 +1,5 @@
 import { VerticalStack, HorizontalGrid, Box, Page, Text, AlphaCard, TextField, Checkbox, Collapsible, ChoiceList, ColorPicker, RangeSlider } from "@shopify/polaris";
-import { TitleBar } from "@shopify/app-bridge-react";
+import { TitleBar, Toast } from "@shopify/app-bridge-react";
 import { useTranslation, Trans } from "react-i18next";
 import { useState, useEffect, useCallback } from 'react';
 import { useAppQuery, useAuthenticatedFetch } from "../hooks";
@@ -7,6 +7,13 @@ import { apiPath, apiParam, ownerType } from '../../common-variable';
 
 function InventoryStatusSettings() {
 	const [isLoading, setIsLoading] = useState(true);
+
+	const emptyToastProps = { content: null };
+	const [toastProps, setToastProps] = useState(emptyToastProps);
+	const toastMarkup = toastProps.content && (
+		<Toast {...toastProps} onDismiss={() => setToastProps(emptyToastProps)} />
+	);
+
 	const fetch = useAuthenticatedFetch();
 	const metafieldsApiPath = apiPath.metafields;
 	const namespace = apiParam.metafields.namespace;
@@ -186,21 +193,33 @@ function InventoryStatusSettings() {
 			res_meta_visibilities = await callMetafieldVisiblities();
 		} else {
 			console.error(`Error: ${metafieldsApiPath}`, response);
+			setToastProps({
+				content: 'failed save',
+				error: true,
+			});
 		}
 
 		let res_meta_visibility_create = null;
 		// metafield storefront visibilities
 		if (res_meta_visibilities !== null && res_meta_visibilities.length > 0) {
-
+			setToastProps({
+				content: 'saved!',
+			});
 		} else if (res_meta_visibilities !== null && res_meta_visibilities.length === 0) {
 			res_meta_visibility_create = await callMetafieldVisibleCreate();
 		}
 
 		if (res_meta_visibility_create?.ok) {
-
+			setToastProps({
+				content: 'saved! It might take a few minute to show the updated value',
+			});
 			console.log('res_meta_visibility_create', res_meta_visibility_create);
 		} else if (res_meta_visibility_create !== null) {
 			console.error(`Error: ${apiPath.metafieldStorefrontVisibilityCreate}`, res_meta_visibility_create);
+			setToastProps({
+				content: 'failed save in process',
+				error: true,
+			});
 		}
 		setIsLoading(false);
 	};
@@ -256,218 +275,221 @@ function InventoryStatusSettings() {
 	);
 
 	return (
-		<Page
-			divider
-			title={"Inventory Status Settings"}
-			primaryAction={{
-				content: "Save",
-				onAction: handleSubmitSave,
-				disabled: isLoading,
-				loading: isLoading,
-			}}
-		>
-			<VerticalStack gap={{ xs: "8", sm: "4" }}>
-				<HorizontalGrid columns={{ xs: "1fr", md: "2fr 5fr" }} gap="4">
-					<Box
-						as="section"
-						paddingInlineStart={{ xs: 4, sm: 0 }}
-						paddingInlineEnd={{ xs: 4, sm: 0 }}
-					>
-						<VerticalStack gap="4">
-							<Text as="h3" variant="headingMd">
-								In Stock Status
-							</Text>
-							<Text as="p" variant="bodyMd">
-								In Stock Status's discription
-							</Text>
-						</VerticalStack>
-					</Box>
-					<AlphaCard roundedAbove="sm">
-						<VerticalStack gap="4">
-							<Checkbox
-								label="Show Status"
-								checked={showInstockFlg}
-								onChange={setShowInstockFlg}
-							/>
-							<Collapsible open={showInstockFlg}>
-								<div style={{ margin: '0 var(--p-space-5)', }}>
-									<ChoiceList
-										title="Status Icon"
-										choices={[
-											{ label: 'Show', value: 'icon', renderChildren: renderChildrenColorPickerInstock, },
-											{ label: 'Hide', value: 'none' },
-										]}
-										allowMultiple={false}
-										selected={instockIconType}
-										onChange={setInstockIconType}
-									/>
-									<TextField
-										label="Status Message"
-										value={msgInstock}
-										onChange={setMsgInstock}
-									/>
-								</div>
-							</Collapsible>
-						</VerticalStack>
-					</AlphaCard>
-				</HorizontalGrid>
+		<>
+			{toastMarkup}
+			<Page
+				divider
+				title={"Inventory Status Settings"}
+				primaryAction={{
+					content: "Save",
+					onAction: handleSubmitSave,
+					disabled: isLoading,
+					loading: isLoading,
+				}}
+			>
+				<VerticalStack gap={{ xs: "8", sm: "4" }}>
+					<HorizontalGrid columns={{ xs: "1fr", md: "2fr 5fr" }} gap="4">
+						<Box
+							as="section"
+							paddingInlineStart={{ xs: 4, sm: 0 }}
+							paddingInlineEnd={{ xs: 4, sm: 0 }}
+						>
+							<VerticalStack gap="4">
+								<Text as="h3" variant="headingMd">
+									In Stock Status
+								</Text>
+								<Text as="p" variant="bodyMd">
+									In Stock Status's discription
+								</Text>
+							</VerticalStack>
+						</Box>
+						<AlphaCard roundedAbove="sm">
+							<VerticalStack gap="4">
+								<Checkbox
+									label="Show Status"
+									checked={showInstockFlg}
+									onChange={setShowInstockFlg}
+								/>
+								<Collapsible open={showInstockFlg}>
+									<div style={{ margin: '0 var(--p-space-5)', }}>
+										<ChoiceList
+											title="Status Icon"
+											choices={[
+												{ label: 'Show', value: 'icon', renderChildren: renderChildrenColorPickerInstock, },
+												{ label: 'Hide', value: 'none' },
+											]}
+											allowMultiple={false}
+											selected={instockIconType}
+											onChange={setInstockIconType}
+										/>
+										<TextField
+											label="Status Message"
+											value={msgInstock}
+											onChange={setMsgInstock}
+										/>
+									</div>
+								</Collapsible>
+							</VerticalStack>
+						</AlphaCard>
+					</HorizontalGrid>
 
-				<HorizontalGrid columns={{ xs: "1fr", md: "2fr 5fr" }} gap="4">
-					<Box
-						as="section"
-						paddingInlineStart={{ xs: 4, sm: 0 }}
-						paddingInlineEnd={{ xs: 4, sm: 0 }}
-					>
-						<VerticalStack gap="4">
-							<Text as="h3" variant="headingMd">
-								Low Inventory Status
-							</Text>
-							<Text as="p" variant="bodyMd">
-								Low Inventory's discription
-							</Text>
-						</VerticalStack>
-					</Box>
-					<AlphaCard roundedAbove="sm">
-						<VerticalStack gap="4">
-							<Checkbox
-								label="Show Status"
-								checked={showLowInventoryFlg}
-								onChange={setShowLowInventoryFlg}
-							/>
-							<Collapsible open={showLowInventoryFlg}>
-								<div style={{ margin: '0 var(--p-space-5)', }}>
-									<ChoiceList
-										title="Status Icon"
-										choices={[
-											{ label: 'Show', value: 'icon', renderChildren: renderChildrenColorPickerLowInventory, },
-											{ label: 'Hide', value: 'none' },
-										]}
-										allowMultiple={false}
-										selected={lowInventoryIconType}
-										onChange={setLowInventoryType}
-									/>
-									<RangeSlider
-										output
-										label="Low inventory threshold"
-										min={1}
-										max={100}
-										value={rangeLowInventory}
-										onChange={setRangeLowInventory}
-										// prefix={<p>Hue</p>}
-										suffix={
-											<p
-												style={{
-													minWidth: '24px',
-													textAlign: 'right',
-												}}
-											>
-												{rangeLowInventory}
-											</p>
-										}
-									/>
-									<TextField
-										label="Status Message"
-										value={msgLowInventory}
-										onChange={setMsgLowInventory}
-									/>
-								</div>
-							</Collapsible>
-						</VerticalStack>
-					</AlphaCard>
-				</HorizontalGrid>
+					<HorizontalGrid columns={{ xs: "1fr", md: "2fr 5fr" }} gap="4">
+						<Box
+							as="section"
+							paddingInlineStart={{ xs: 4, sm: 0 }}
+							paddingInlineEnd={{ xs: 4, sm: 0 }}
+						>
+							<VerticalStack gap="4">
+								<Text as="h3" variant="headingMd">
+									Low Inventory Status
+								</Text>
+								<Text as="p" variant="bodyMd">
+									Low Inventory's discription
+								</Text>
+							</VerticalStack>
+						</Box>
+						<AlphaCard roundedAbove="sm">
+							<VerticalStack gap="4">
+								<Checkbox
+									label="Show Status"
+									checked={showLowInventoryFlg}
+									onChange={setShowLowInventoryFlg}
+								/>
+								<Collapsible open={showLowInventoryFlg}>
+									<div style={{ margin: '0 var(--p-space-5)', }}>
+										<ChoiceList
+											title="Status Icon"
+											choices={[
+												{ label: 'Show', value: 'icon', renderChildren: renderChildrenColorPickerLowInventory, },
+												{ label: 'Hide', value: 'none' },
+											]}
+											allowMultiple={false}
+											selected={lowInventoryIconType}
+											onChange={setLowInventoryType}
+										/>
+										<RangeSlider
+											output
+											label="Low inventory threshold"
+											min={1}
+											max={100}
+											value={rangeLowInventory}
+											onChange={setRangeLowInventory}
+											// prefix={<p>Hue</p>}
+											suffix={
+												<p
+													style={{
+														minWidth: '24px',
+														textAlign: 'right',
+													}}
+												>
+													{rangeLowInventory}
+												</p>
+											}
+										/>
+										<TextField
+											label="Status Message"
+											value={msgLowInventory}
+											onChange={setMsgLowInventory}
+										/>
+									</div>
+								</Collapsible>
+							</VerticalStack>
+						</AlphaCard>
+					</HorizontalGrid>
 
-				<HorizontalGrid columns={{ xs: "1fr", md: "2fr 5fr" }} gap="4">
-					<Box
-						as="section"
-						paddingInlineStart={{ xs: 4, sm: 0 }}
-						paddingInlineEnd={{ xs: 4, sm: 0 }}
-					>
-						<VerticalStack gap="4">
-							<Text as="h3" variant="headingMd">
-								Pre Order Status
-							</Text>
-							<Text as="p" variant="bodyMd">
-								Pre Order Status's discription
-							</Text>
-						</VerticalStack>
-					</Box>
-					<AlphaCard roundedAbove="sm">
-						<VerticalStack gap="4">
-							<Checkbox
-								label="Show Status"
-								checked={showPreorderFlg}
-								onChange={setShowPreorderFlg}
-							/>
-							<Collapsible open={showPreorderFlg}>
-								<div style={{ margin: '0 var(--p-space-5)', }}>
-									<ChoiceList
-										title="Status Icon"
-										choices={[
-											{ label: 'Show', value: 'icon', renderChildren: renderChildrenColorPickerPreorder, },
-											{ label: 'Hide', value: 'none' },
-										]}
-										allowMultiple={false}
-										selected={preorderIconType}
-										onChange={setPreorderIconType}
-									/>
-									<TextField
-										label="Status Message"
-										value={msgPreorder}
-										onChange={setMsgPreorder}
-									/>
-								</div>
-							</Collapsible>
-						</VerticalStack>
-					</AlphaCard>
-				</HorizontalGrid>
+					<HorizontalGrid columns={{ xs: "1fr", md: "2fr 5fr" }} gap="4">
+						<Box
+							as="section"
+							paddingInlineStart={{ xs: 4, sm: 0 }}
+							paddingInlineEnd={{ xs: 4, sm: 0 }}
+						>
+							<VerticalStack gap="4">
+								<Text as="h3" variant="headingMd">
+									Pre Order Status
+								</Text>
+								<Text as="p" variant="bodyMd">
+									Pre Order Status's discription
+								</Text>
+							</VerticalStack>
+						</Box>
+						<AlphaCard roundedAbove="sm">
+							<VerticalStack gap="4">
+								<Checkbox
+									label="Show Status"
+									checked={showPreorderFlg}
+									onChange={setShowPreorderFlg}
+								/>
+								<Collapsible open={showPreorderFlg}>
+									<div style={{ margin: '0 var(--p-space-5)', }}>
+										<ChoiceList
+											title="Status Icon"
+											choices={[
+												{ label: 'Show', value: 'icon', renderChildren: renderChildrenColorPickerPreorder, },
+												{ label: 'Hide', value: 'none' },
+											]}
+											allowMultiple={false}
+											selected={preorderIconType}
+											onChange={setPreorderIconType}
+										/>
+										<TextField
+											label="Status Message"
+											value={msgPreorder}
+											onChange={setMsgPreorder}
+										/>
+									</div>
+								</Collapsible>
+							</VerticalStack>
+						</AlphaCard>
+					</HorizontalGrid>
 
-				<HorizontalGrid columns={{ xs: "1fr", md: "2fr 5fr" }} gap="4">
-					<Box
-						as="section"
-						paddingInlineStart={{ xs: 4, sm: 0 }}
-						paddingInlineEnd={{ xs: 4, sm: 0 }}
-					>
-						<VerticalStack gap="4">
-							<Text as="h3" variant="headingMd">
-								Out Of Stock Status
-							</Text>
-							<Text as="p" variant="bodyMd">
-								Out Of Stock Status's discription
-							</Text>
-						</VerticalStack>
-					</Box>
-					<AlphaCard roundedAbove="sm">
-						<VerticalStack gap="4">
-							<Checkbox
-								label="Show Status"
-								checked={showOutOfStockFlg}
-								onChange={setShowOutOfStockFlg}
-							/>
-							<Collapsible open={showOutOfStockFlg}>
-								<div style={{ margin: '0 var(--p-space-5)', }}>
-									<ChoiceList
-										title="Status Icon"
-										choices={[
-											{ label: 'Show', value: 'icon', renderChildren: renderChildrenColorPickerOutOfStock, },
-											{ label: 'Hide', value: 'none' },
-										]}
-										allowMultiple={false}
-										selected={outOfStockIconType}
-										onChange={setOutOfStockIconType}
-									/>
-									<TextField
-										label="Status Message"
-										value={msgOutOfStock}
-										onChange={setMsgOutOfStock}
-									/>
-								</div>
-							</Collapsible>
-						</VerticalStack>
-					</AlphaCard>
-				</HorizontalGrid>
+					<HorizontalGrid columns={{ xs: "1fr", md: "2fr 5fr" }} gap="4">
+						<Box
+							as="section"
+							paddingInlineStart={{ xs: 4, sm: 0 }}
+							paddingInlineEnd={{ xs: 4, sm: 0 }}
+						>
+							<VerticalStack gap="4">
+								<Text as="h3" variant="headingMd">
+									Out Of Stock Status
+								</Text>
+								<Text as="p" variant="bodyMd">
+									Out Of Stock Status's discription
+								</Text>
+							</VerticalStack>
+						</Box>
+						<AlphaCard roundedAbove="sm">
+							<VerticalStack gap="4">
+								<Checkbox
+									label="Show Status"
+									checked={showOutOfStockFlg}
+									onChange={setShowOutOfStockFlg}
+								/>
+								<Collapsible open={showOutOfStockFlg}>
+									<div style={{ margin: '0 var(--p-space-5)', }}>
+										<ChoiceList
+											title="Status Icon"
+											choices={[
+												{ label: 'Show', value: 'icon', renderChildren: renderChildrenColorPickerOutOfStock, },
+												{ label: 'Hide', value: 'none' },
+											]}
+											allowMultiple={false}
+											selected={outOfStockIconType}
+											onChange={setOutOfStockIconType}
+										/>
+										<TextField
+											label="Status Message"
+											value={msgOutOfStock}
+											onChange={setMsgOutOfStock}
+										/>
+									</div>
+								</Collapsible>
+							</VerticalStack>
+						</AlphaCard>
+					</HorizontalGrid>
 
-			</VerticalStack>
-		</Page>
+				</VerticalStack>
+			</Page>
+		</>
 	);
 }
 
