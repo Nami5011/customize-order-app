@@ -1,4 +1,4 @@
-@keyframes inventory-pulse {
+@keyframes inventory-pulse-icon25 {
 	0% {
 		opacity: 0.5;
 	}
@@ -8,8 +8,18 @@
 	}
 }
 
-.icon_inventory:after,
-.icon_inventory:before {
+.icon_inventory__custom {
+    position: relative;
+    width: 25px;
+    height: 25px;
+    margin-right: 10px;
+	display: inline-block;
+	vertical-align: middle;
+	fill: currentColor;
+}
+
+.icon_inventory__custom:after,
+.icon_inventory__custom:before {
 	width: 9px;
 	height: 9px;
 	border-radius: 9px;
@@ -20,16 +30,26 @@
 	margin: 8px;
 }
 
-.icon_inventory:before {
-	animation: inventory-pulse 2s linear infinite;
+.icon_inventory__custom:before {
+	animation: inventory-pulse-icon25 2s linear infinite;
 }
+
+.inventory_list_block__custom, .inventory_list__custom {
+	list-style: none!important;
+}
+
+.inventory_list_block__custom {
+	padding-left: 0;
+	margin-left: 0;
+}
+
 /* in style tag in liquid */
-/* .icon_inventory:after,
-.icon_inventory:before {
+/* .icon_inventory__custom:after,
+.icon_inventory__custom:before {
 	background: #54c63a;
 }
-.inventory_low .icon_inventory:after,
-.inventory_low .icon_inventory:before {
+.inventory_low .icon_inventory__custom:after,
+.inventory_low .icon_inventory__custom:before {
 	background: #f4af29;
 }
 .inventory_low {

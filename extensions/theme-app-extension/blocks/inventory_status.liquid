@@ -1,147 +1,120 @@
-{% comment %}
-   {% assign variant = product.selected_or_first_available_variant %}
-  {% assign inventory_quantity = variant.inventory_quantity %}
-  {% assign inventory_policy = variant.inventory_policy %}
-  {{ inventory_quantity }}
-  {{ inventory_policy }}
-  {% if inventory_quantity != blank %}
-    {% assign custom_message = block.settings.inventory_low_status | replace: '{number}', inventory_quantity %}
-    {% if custom_message != blank %}
-      <div>{{ custom_message }}</div>
-    {% endif %}
-  {% endif %}
-  {% if block.settings.show_instock_status == true %}
-  {% endif %}
-{% endcomment %}
+{% liquid
+  assign variant = product.selected_or_first_available_variant
+  assign inventory_quantity = variant.inventory_quantity
+  assign inventory_policy = variant.inventory_policy
 
-{% comment %}
-   {% if custom_message != blank %}
-    <div>{{ custom_message }}!{{ inventory_data.inventory_quantity }}</div>
+  assign appSettings = shop.metafields['customize-order-app'].inventoryStatusSettings.value
+  if inventory_quantity != blank
+    assign message_instock = appSettings.msgInstock | replace: '{number}', inventory_quantity
+    assign message_lowinventory = appSettings.msgLowInventory | replace: '{number}', inventory_quantity
+  else
+    assign message_instock = appSettings.msgInstock
+    assign message_lowinventory = appSettings.msgLowInventory
+  endif
+  assign icon_color_hsb_obj = ''
+%}
+
+{% if inventory_quantity > 0 %}
+  {% if appSettings.showLowInventoryFlg == true and appSettings.rangeLowInventory >= inventory_quantity %}
+    <ul class="inventory_list_block__custom">
+      <li class="inventory_list__custom">
+        {% if appSettings.lowInventoryIconType.first == 'icon' %}
+          {% assign icon_color_hsb_obj = appSettings.colorLowInventoryIcon %}
+          <span class="icon_inventory__custom"></span>
+        {% endif %}
+        {{ message_lowinventory }}
+      </li>
+    </ul>
+
+  {% elsif appSettings.showInstockFlg == true %}
+    <ul class="inventory_list_block__custom">
+      <li class="inventory_list__custom">
+        {% if appSettings.instockIconType.first == 'icon' %}
+          {% assign icon_color_hsb_obj = appSettings.colorInstockIcon %}
+          <span class="icon_inventory__custom"></span>
+        {% endif %}
+        {{ message_instock }}
+      </li>
+    </ul>
   {% endif %}
-  {{ block.settings | json }}
-  {{ product | json }}
-  {% if inventory_data.inventory_policy == 'continue' %}
-    <span style="color:{{ block.settings.colour }}">
-      {{ inventory_data.inventory_quantity }}
-    </span>
-    <div>
-      {{ block.settings.pre_order_status }}
-    </div>
+
+{% else %}
+  {% if appSettings.showPreorderFlg == true and inventory_policy == 'continue' %}
+    <ul class="inventory_list_block__custom">
+      <li class="inventory_list__custom">
+        {% if appSettings.preorderIconType.first == 'icon' %}
+          {% assign icon_color_hsb_obj = appSettings.colorPreorderIcon %}
+          <span class="icon_inventory__custom"></span>
+        {% endif %}
+        {{ appSettings.msgPreorder }}
+      </li>
+    </ul>
+
+  {% elsif appSettings.showOutOfStockFlg == true %}
+    <ul class="inventory_list_block__custom">
+      <li class="inventory_list__custom">
+        {% if appSettings.outOfStockIconType.first == 'icon' %}
+          {% assign icon_color_hsb_obj = appSettings.colorOutOfStockIcon %}
+          <span class="icon_inventory__custom"></span>
+        {% endif %}
+        {{ appSettings.msgOutOfStock }}
+      </li>
+    </ul>
   {% endif %}
-{% endcomment %}
+{% endif %}
 
 <style>
-  .icon_inventory:after,
-  .icon_inventory:before {
-    background: #54c63a;
+  .icon_inventory__custom:after,
+  .icon_inventory__custom:before {
+    background: var(--inventory-pulse-icon-color25);
   }
-  .inventory_low .icon_inventory:after,
-  .inventory_low .icon_inventory:before {
-    background: #f4af29;
-  }
-  .inventory_low {
-    color: #f4af29;
+  {% comment %} .inventory_low .icon_inventory__custom:after,
+  .inventory_low .icon_inventory__custom:before {
+    background: {{ icon_color_hsl }};
+  } {% endcomment %}
+  .icon_inventory__custom {
+    color: var(--inventory-pulse-icon-color25);
   }
 </style>
+<script>
+  const HSBToRGB = (h, s, b) => {
+  	// s /= 100;
+  	// b /= 100;
+  	const k = (n) => (n + h / 60) % 6;
+  	const f = (n) => b * (1 - s * Math.max(0, Math.min(k(n), 4 - k(n), 1)));
+  	var r = 255 * f(5);
+  	var g = 255 * f(3);
+  	var b = 255 * f(1);
+  	var rgb = 'rgb(' + r + ' ' + g + ' ' + b + ')';
+  	return rgb;
+  };
+  var icon_color_hsb = {
+  	hue: 0,
+  	saturation: 0,
+  	brightness: 1,
+  }
+  {% if icon_color_hsb_obj != blank %}
+  	icon_color_hsb = {{ icon_color_hsb_obj | json }}
+  {% endif %}
+  console.log(icon_color_hsb);
+  var hue = icon_color_hsb?.hue;
+  var saturation = icon_color_hsb?.saturation;
+  var brightness = icon_color_hsb?.brightness;
+  var icon_color_rgb = HSBToRGB(hue ?? 0, saturation ?? 0, brightness ?? 1);
+  document.addEventListener('DOMContentLoaded', function () {
+  	console.log(icon_color_hsb);
+  	let targetElement = document.querySelector('.icon_inventory__custom');
+  	if (targetElement) {
+  	targetElement.style.setProperty('--inventory-pulse-icon-color25', icon_color_rgb);
+  	}
+  });
+</script>
 {{ 'inventory-customize-order-app.css' | asset_url | stylesheet_tag }}
-{% comment %}
-   "stylesheet": "my-css.css",
-  "javascript": "my-javascript.js",
-{% endcomment %}
 {% schema %}
 {
   "name": "Inventory Status",
+  "stylesheet": "inventory-customize-order-app.css",
   "target": "section",
-  "settings": [
-    {
-      "type": "header",
-      "content": "In Stock status"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_instock_status",
-      "label": "Show In Stock status"
-    },
-    {
-      "type": "radio",
-      "id": "instock_icon",
-      "label": "Icon Type",
-      "options": [
-        {
-          "value": "circle",
-          "label": "Circle"
-        },
-        {
-          "value": "custom",
-          "label": "Custom"
-        },
-        {
-          "value": "none",
-          "label": "None"
-        }
-      ],
-      "default": "circle"
-    },
-    { "type": "color", "id": "instock_icon_colour", "label": "Icon Colour", "default": "#54c63a" },
-    {
-      "type": "text",
-      "id": "instock_status",
-      "label": "In Stock Status",
-      "default": "In stock"
-    },
-
-    {
-      "type": "header",
-      "content": "Inventory Low status"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_inventory_low_status",
-      "label": "Show Inventory Low status"
-    },
-    {
-      "type": "radio",
-      "id": "inventory_low_icon",
-      "label": "Icon Type",
-      "options": [
-        {
-          "value": "circle",
-          "label": "Circle"
-        },
-        {
-          "value": "custom",
-          "label": "Custom"
-        },
-        {
-          "value": "none",
-          "label": "None"
-        }
-      ],
-      "default": "circle"
-    },
-    { "type": "color", "id": "inventory_low_icon_colour", "label": "Icon Colour", "default": "#f4af29" },
-    {
-      "type": "text",
-      "id": "inventory_low_status",
-      "label": "Inventory Low Status",
-      "default": "Only {number} in stock"
-    },
-
-    {
-      "type": "header",
-      "content": "Inventory Low status"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_pre_order_status",
-      "label": "Show Pre Order status"
-    },
-    {
-      "type": "text",
-      "id": "pre_order_status",
-      "label": "Pre Order Status",
-      "default": "🎉 Pre Order Is Available!"
-    }
-  ]
+  "settings": []
 }
 {% endschema %}
