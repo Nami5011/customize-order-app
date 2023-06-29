@@ -1,4 +1,4 @@
-import { VerticalStack, HorizontalGrid, Box, Page, Text, AlphaCard, TextField, Checkbox, Collapsible, ChoiceList, ColorPicker, RangeSlider } from "@shopify/polaris";
+import { VerticalStack, HorizontalGrid, Box, Page, Text, AlphaCard, TextField, Checkbox, Collapsible, ChoiceList, ColorPicker, RangeSlider, HorizontalStack, Button } from "@shopify/polaris";
 import { TitleBar, Toast } from "@shopify/app-bridge-react";
 import { useTranslation, Trans } from "react-i18next";
 import { useState, useEffect, useCallback } from 'react';
@@ -194,7 +194,7 @@ function InventoryStatusSettings() {
 		} else {
 			console.error(`Error: ${metafieldsApiPath}`, response);
 			setToastProps({
-				content: 'failed save',
+				content: 'Failed save',
 				error: true,
 			});
 		}
@@ -203,7 +203,7 @@ function InventoryStatusSettings() {
 		// metafield storefront visibilities
 		if (res_meta_visibilities !== null && res_meta_visibilities.length > 0) {
 			setToastProps({
-				content: 'saved!',
+				content: 'Setting saved!',
 			});
 		} else if (res_meta_visibilities !== null && res_meta_visibilities.length === 0) {
 			res_meta_visibility_create = await callMetafieldVisibleCreate();
@@ -211,13 +211,13 @@ function InventoryStatusSettings() {
 
 		if (res_meta_visibility_create?.ok) {
 			setToastProps({
-				content: 'saved! It might take a few minute to show the updated value',
+				content: 'Setting saved!',
 			});
 			console.log('res_meta_visibility_create', res_meta_visibility_create);
 		} else if (res_meta_visibility_create !== null) {
 			console.error(`Error: ${apiPath.metafieldStorefrontVisibilityCreate}`, res_meta_visibility_create);
 			setToastProps({
-				content: 'failed save in process',
+				content: 'Failed save in process',
 				error: true,
 			});
 		}
@@ -278,10 +278,11 @@ function InventoryStatusSettings() {
 		<>
 			{toastMarkup}
 			<Page
+				backAction={{ content: 'App Top', url: '/' }}
 				divider
 				title={"Inventory Status Settings"}
 				primaryAction={{
-					content: "Save",
+					content: "Save setting",
 					onAction: handleSubmitSave,
 					disabled: isLoading,
 					loading: isLoading,
@@ -312,21 +313,23 @@ function InventoryStatusSettings() {
 								/>
 								<Collapsible open={showInstockFlg}>
 									<div style={{ margin: '0 var(--p-space-5)', }}>
-										<ChoiceList
-											title="Status Icon"
-											choices={[
-												{ label: 'Show', value: 'icon', renderChildren: renderChildrenColorPickerInstock, },
-												{ label: 'Hide', value: 'none' },
-											]}
-											allowMultiple={false}
-											selected={instockIconType}
-											onChange={setInstockIconType}
-										/>
-										<TextField
-											label="Status Message"
-											value={msgInstock}
-											onChange={setMsgInstock}
-										/>
+										<VerticalStack gap="4">
+											<ChoiceList
+												title="Status Icon"
+												choices={[
+													{ label: 'Show', value: 'icon', renderChildren: renderChildrenColorPickerInstock, },
+													{ label: 'Hide', value: 'none' },
+												]}
+												allowMultiple={false}
+												selected={instockIconType}
+												onChange={setInstockIconType}
+											/>
+											<TextField
+												label="Status Message"
+												value={msgInstock}
+												onChange={setMsgInstock}
+											/>
+										</VerticalStack>
 									</div>
 								</Collapsible>
 							</VerticalStack>
@@ -357,40 +360,42 @@ function InventoryStatusSettings() {
 								/>
 								<Collapsible open={showLowInventoryFlg}>
 									<div style={{ margin: '0 var(--p-space-5)', }}>
-										<ChoiceList
-											title="Status Icon"
-											choices={[
-												{ label: 'Show', value: 'icon', renderChildren: renderChildrenColorPickerLowInventory, },
-												{ label: 'Hide', value: 'none' },
-											]}
-											allowMultiple={false}
-											selected={lowInventoryIconType}
-											onChange={setLowInventoryType}
-										/>
-										<RangeSlider
-											output
-											label="Low inventory threshold"
-											min={1}
-											max={100}
-											value={rangeLowInventory}
-											onChange={setRangeLowInventory}
-											// prefix={<p>Hue</p>}
-											suffix={
-												<p
-													style={{
-														minWidth: '24px',
-														textAlign: 'right',
-													}}
-												>
-													{rangeLowInventory}
-												</p>
-											}
-										/>
-										<TextField
-											label="Status Message"
-											value={msgLowInventory}
-											onChange={setMsgLowInventory}
-										/>
+										<VerticalStack gap="4">
+											<ChoiceList
+												title="Status Icon"
+												choices={[
+													{ label: 'Show', value: 'icon', renderChildren: renderChildrenColorPickerLowInventory, },
+													{ label: 'Hide', value: 'none' },
+												]}
+												allowMultiple={false}
+												selected={lowInventoryIconType}
+												onChange={setLowInventoryType}
+											/>
+											<RangeSlider
+												output
+												label="Low inventory threshold"
+												min={1}
+												max={100}
+												value={rangeLowInventory}
+												onChange={setRangeLowInventory}
+												// prefix={<p>Hue</p>}
+												suffix={
+													<p
+														style={{
+															minWidth: '24px',
+															textAlign: 'right',
+														}}
+													>
+														{rangeLowInventory}
+													</p>
+												}
+											/>
+											<TextField
+												label="Status Message"
+												value={msgLowInventory}
+												onChange={setMsgLowInventory}
+											/>
+										</VerticalStack>
 									</div>
 								</Collapsible>
 							</VerticalStack>
@@ -421,21 +426,23 @@ function InventoryStatusSettings() {
 								/>
 								<Collapsible open={showPreorderFlg}>
 									<div style={{ margin: '0 var(--p-space-5)', }}>
-										<ChoiceList
-											title="Status Icon"
-											choices={[
-												{ label: 'Show', value: 'icon', renderChildren: renderChildrenColorPickerPreorder, },
-												{ label: 'Hide', value: 'none' },
-											]}
-											allowMultiple={false}
-											selected={preorderIconType}
-											onChange={setPreorderIconType}
-										/>
-										<TextField
-											label="Status Message"
-											value={msgPreorder}
-											onChange={setMsgPreorder}
-										/>
+										<VerticalStack gap="4">
+											<ChoiceList
+												title="Status Icon"
+												choices={[
+													{ label: 'Show', value: 'icon', renderChildren: renderChildrenColorPickerPreorder, },
+													{ label: 'Hide', value: 'none' },
+												]}
+												allowMultiple={false}
+												selected={preorderIconType}
+												onChange={setPreorderIconType}
+											/>
+											<TextField
+												label="Status Message"
+												value={msgPreorder}
+												onChange={setMsgPreorder}
+											/>
+										</VerticalStack>
 									</div>
 								</Collapsible>
 							</VerticalStack>
@@ -466,27 +473,36 @@ function InventoryStatusSettings() {
 								/>
 								<Collapsible open={showOutOfStockFlg}>
 									<div style={{ margin: '0 var(--p-space-5)', }}>
-										<ChoiceList
-											title="Status Icon"
-											choices={[
-												{ label: 'Show', value: 'icon', renderChildren: renderChildrenColorPickerOutOfStock, },
-												{ label: 'Hide', value: 'none' },
-											]}
-											allowMultiple={false}
-											selected={outOfStockIconType}
-											onChange={setOutOfStockIconType}
-										/>
-										<TextField
-											label="Status Message"
-											value={msgOutOfStock}
-											onChange={setMsgOutOfStock}
-										/>
+										<VerticalStack gap="4">
+											<ChoiceList
+												title="Status Icon"
+												choices={[
+													{ label: 'Show', value: 'icon', renderChildren: renderChildrenColorPickerOutOfStock, },
+													{ label: 'Hide', value: 'none' },
+												]}
+												allowMultiple={false}
+												selected={outOfStockIconType}
+												onChange={setOutOfStockIconType}
+											/>
+											<TextField
+												label="Status Message"
+												value={msgOutOfStock}
+												onChange={setMsgOutOfStock}
+											/>
+										</VerticalStack>
 									</div>
 								</Collapsible>
 							</VerticalStack>
 						</AlphaCard>
 					</HorizontalGrid>
-
+					<HorizontalStack align="end">
+						<Button
+							primary
+							onClick={handleSubmitSave}
+							disabled={isLoading}
+							loading={isLoading}
+						>Save setting</Button>
+					</HorizontalStack>
 				</VerticalStack>
 			</Page>
 		</>

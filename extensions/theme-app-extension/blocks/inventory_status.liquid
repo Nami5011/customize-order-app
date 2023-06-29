@@ -2,6 +2,7 @@
   assign variant = product.selected_or_first_available_variant
   assign inventory_quantity = variant.inventory_quantity
   assign inventory_policy = variant.inventory_policy
+  assign inventory_management = variant.inventory_management
 
   assign appSettings = shop.metafields['customize-order-app'].inventoryStatusSettings.value
   if inventory_quantity != blank
@@ -50,7 +51,7 @@
       </li>
     </ul>
 
-  {% elsif appSettings.showOutOfStockFlg == true %}
+  {% elsif appSettings.showOutOfStockFlg == true and inventory_management == 'shopify' %}
     <ul class="inventory_list_block__custom">
       <li class="inventory_list__custom">
         {% if appSettings.outOfStockIconType.first == 'icon' %}
@@ -105,9 +106,18 @@
   	console.log(icon_color_hsb);
   	let targetElement = document.querySelector('.icon_inventory__custom');
   	if (targetElement) {
-  	targetElement.style.setProperty('--inventory-pulse-icon-color25', icon_color_rgb);
+  	  targetElement.style.setProperty('--inventory-pulse-icon-color25', icon_color_rgb);
   	}
   });
+  // ['DOMContentLoaded', 'load'].forEach((e) => {
+  // 	document.addEventListener(e, function () {
+  // 		console.log(icon_color_hsb);
+  // 		let targetElement = document.querySelector('.icon_inventory__custom');
+  // 		if (targetElement) {
+  // 		  targetElement.style.setProperty('--inventory-pulse-icon-color25', icon_color_rgb);
+  // 		}
+  // 	});
+  // });
 </script>
 {{ 'inventory-customize-order-app.css' | asset_url | stylesheet_tag }}
 {% schema %}
