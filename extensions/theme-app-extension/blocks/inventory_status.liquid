@@ -12,7 +12,7 @@
     assign message_instock = appSettings.msgInstock
     assign message_lowinventory = appSettings.msgLowInventory
   endif
-  assign icon_color_hsb_obj = ''
+  assign icon_color = 'rgb(255, 255, 255)'
 %}
 
 {% if inventory_quantity > 0 %}
@@ -20,7 +20,7 @@
     <ul class="inventory_list_block__custom">
       <li class="inventory_list__custom">
         {% if appSettings.lowInventoryIconType.first == 'icon' %}
-          {% assign icon_color_hsb_obj = appSettings.colorLowInventoryIcon %}
+          {% assign icon_color = appSettings.rgbColorLowInventoryIcon %}
           <span class="icon_inventory__custom"></span>
         {% endif %}
         {{ message_lowinventory }}
@@ -31,7 +31,7 @@
     <ul class="inventory_list_block__custom">
       <li class="inventory_list__custom">
         {% if appSettings.instockIconType.first == 'icon' %}
-          {% assign icon_color_hsb_obj = appSettings.colorInstockIcon %}
+          {% assign icon_color = appSettings.rgbColorInstockIcon %}
           <span class="icon_inventory__custom"></span>
         {% endif %}
         {{ message_instock }}
@@ -44,7 +44,7 @@
     <ul class="inventory_list_block__custom">
       <li class="inventory_list__custom">
         {% if appSettings.preorderIconType.first == 'icon' %}
-          {% assign icon_color_hsb_obj = appSettings.colorPreorderIcon %}
+          {% assign icon_color = appSettings.rgbColorPreorderIcon %}
           <span class="icon_inventory__custom"></span>
         {% endif %}
         {{ appSettings.msgPreorder }}
@@ -55,7 +55,7 @@
     <ul class="inventory_list_block__custom">
       <li class="inventory_list__custom">
         {% if appSettings.outOfStockIconType.first == 'icon' %}
-          {% assign icon_color_hsb_obj = appSettings.colorOutOfStockIcon %}
+          {% assign icon_color = appSettings.rgbColorOutOfStockIcon %}
           <span class="icon_inventory__custom"></span>
         {% endif %}
         {{ appSettings.msgOutOfStock }}
@@ -67,58 +67,60 @@
 <style>
   .icon_inventory__custom:after,
   .icon_inventory__custom:before {
-    background: var(--inventory-pulse-icon-color25);
+    background: {{ icon_color }};
   }
   {% comment %} .inventory_low .icon_inventory__custom:after,
   .inventory_low .icon_inventory__custom:before {
     background: {{ icon_color_hsl }};
   } {% endcomment %}
   .icon_inventory__custom {
-    color: var(--inventory-pulse-icon-color25);
+    color: {{ icon_color }};
   }
 </style>
-<script>
-  const HSBToRGB = (h, s, b) => {
-  	// s /= 100;
-  	// b /= 100;
-  	const k = (n) => (n + h / 60) % 6;
-  	const f = (n) => b * (1 - s * Math.max(0, Math.min(k(n), 4 - k(n), 1)));
-  	var r = 255 * f(5);
-  	var g = 255 * f(3);
-  	var b = 255 * f(1);
-  	var rgb = 'rgb(' + r + ' ' + g + ' ' + b + ')';
-  	return rgb;
-  };
-  var icon_color_hsb = {
-  	hue: 0,
-  	saturation: 0,
-  	brightness: 1,
-  }
-  {% if icon_color_hsb_obj != blank %}
-  	icon_color_hsb = {{ icon_color_hsb_obj | json }}
-  {% endif %}
-  console.log(icon_color_hsb);
-  var hue = icon_color_hsb?.hue;
-  var saturation = icon_color_hsb?.saturation;
-  var brightness = icon_color_hsb?.brightness;
-  var icon_color_rgb = HSBToRGB(hue ?? 0, saturation ?? 0, brightness ?? 1);
-  document.addEventListener('DOMContentLoaded', function () {
-  	console.log(icon_color_hsb);
-  	let targetElement = document.querySelector('.icon_inventory__custom');
-  	if (targetElement) {
-  	  targetElement.style.setProperty('--inventory-pulse-icon-color25', icon_color_rgb);
-  	}
-  });
-  // ['DOMContentLoaded', 'load'].forEach((e) => {
-  // 	document.addEventListener(e, function () {
-  // 		console.log(icon_color_hsb);
-  // 		let targetElement = document.querySelector('.icon_inventory__custom');
-  // 		if (targetElement) {
-  // 		  targetElement.style.setProperty('--inventory-pulse-icon-color25', icon_color_rgb);
-  // 		}
-  // 	});
-  // });
-</script>
+{% comment %}
+   <script>
+    const HSBToRGB = (h, s, b) => {
+    	// s /= 100;
+    	// b /= 100;
+    	const k = (n) => (n + h / 60) % 6;
+    	const f = (n) => b * (1 - s * Math.max(0, Math.min(k(n), 4 - k(n), 1)));
+    	var r = 255 * f(5);
+    	var g = 255 * f(3);
+    	var b = 255 * f(1);
+    	var rgb = 'rgb(' + r + ' ' + g + ' ' + b + ')';
+    	return rgb;
+    };
+    var icon_color_hsb = {
+    	hue: 0,
+    	saturation: 0,
+    	brightness: 1,
+    }
+    {% if icon_color_hsb_obj != blank %}
+    	icon_color_hsb = {{ icon_color_hsb_obj | json }}
+    {% endif %}
+    console.log(icon_color_hsb);
+    var hue = icon_color_hsb?.hue;
+    var saturation = icon_color_hsb?.saturation;
+    var brightness = icon_color_hsb?.brightness;
+    var icon_color_rgb = HSBToRGB(hue ?? 0, saturation ?? 0, brightness ?? 1);
+    document.addEventListener('DOMContentLoaded', function () {
+    	console.log(icon_color_hsb);
+    	let targetElement = document.querySelector('.icon_inventory__custom');
+    	if (targetElement) {
+    	  targetElement.style.setProperty('--inventory-pulse-icon-color25', icon_color_rgb);
+    	}
+    });
+    // ['DOMContentLoaded', 'load'].forEach((e) => {
+    // 	document.addEventListener(e, function () {
+    // 		console.log(icon_color_hsb);
+    // 		let targetElement = document.querySelector('.icon_inventory__custom');
+    // 		if (targetElement) {
+    // 		  targetElement.style.setProperty('--inventory-pulse-icon-color25', icon_color_rgb);
+    // 		}
+    // 	});
+    // });
+  </script>
+{% endcomment %}
 {{ 'inventory-customize-order-app.css' | asset_url | stylesheet_tag }}
 {% schema %}
 {

@@ -115,22 +115,26 @@ function InventoryStatusSettings() {
 		value.showInstockFlg = showInstockFlg;
 		value.instockIconType = instockIconType;
 		value.colorInstockIcon = colorInstockIcon;
+		value.rgbColorInstockIcon = hsbToRgb(colorInstockIcon.hue, colorInstockIcon.saturation, colorInstockIcon.brightness);
 		value.msgInstock = msgInstock;
 
 		value.showLowInventoryFlg = showLowInventoryFlg;
 		value.lowInventoryIconType = lowInventoryIconType;
 		value.colorLowInventoryIcon = colorLowInventoryIcon;
+		value.rgbColorLowInventoryIcon = hsbToRgb(colorLowInventoryIcon.hue, colorLowInventoryIcon.saturation, colorLowInventoryIcon.brightness);
 		value.rangeLowInventory = rangeLowInventory;
 		value.msgLowInventory = msgLowInventory;
 
 		value.showPreorderFlg = showPreorderFlg;
 		value.preorderIconType = preorderIconType;
 		value.colorPreorderIcon = colorPreorderIcon;
+		value.rgbColorPreorderIcon = hsbToRgb(colorPreorderIcon.hue, colorPreorderIcon.saturation, colorPreorderIcon.brightness);
 		value.msgPreorder = msgPreorder;
 
 		value.showOutOfStockFlg = showOutOfStockFlg;
 		value.outOfStockIconType = outOfStockIconType;
 		value.colorOutOfStockIcon = colorOutOfStockIcon;
+		value.rgbColorOutOfStockIcon = hsbToRgb(colorOutOfStockIcon.hue, colorOutOfStockIcon.saturation, colorOutOfStockIcon.brightness);
 		value.msgOutOfStock = msgOutOfStock;
 
 		data.value = value;
@@ -173,6 +177,21 @@ function InventoryStatusSettings() {
 			body: JSON.stringify(data),
 		});
 		return response;
+	};
+
+	const hsbToRgb = (_h = null, _s = null, _b = null) => {
+		if (_h === null || _s === null || _b === null) {
+			return 'rgb(255, 255, 255)';
+		}
+		// _s /= 100;
+		// _b /= 100;
+		const k = (n) => (n + _h / 60) % 6;
+		const f = (n) => _b * (1 - _s * Math.max(0, Math.min(k(n), 4 - k(n), 1)));
+		let r = 255 * f(5);
+		let g = 255 * f(3);
+		let b = 255 * f(1);
+		let rgb = 'rgb(' + r + ', ' + g + ', ' + b + ')';
+		return rgb;
 	};
 
 	const handleSubmitSave = async () => {
