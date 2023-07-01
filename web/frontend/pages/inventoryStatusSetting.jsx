@@ -6,6 +6,7 @@ import { useAppQuery, useAuthenticatedFetch } from "../hooks";
 import { apiPath, apiParam, ownerType } from '../../common-variable';
 
 function InventoryStatusSettings() {
+	const { t } = useTranslation();
 	const [isLoading, setIsLoading] = useState(true);
 
 	const emptyToastProps = { content: null };
@@ -207,11 +208,11 @@ function InventoryStatusSettings() {
 		});
 		if (response.ok) {
 			setToastProps({
-				content: 'Setting saved!',
+				content: t("statusSetting.saved"),
 			});
 		} else {
 			setToastProps({
-				content: 'Failed save',
+				content: t("statusSetting.FailedSave"),
 				error: true,
 			});
 		}
@@ -262,7 +263,7 @@ function InventoryStatusSettings() {
 			isSelected && (
 				<>
 					<Text as="p">
-						Pick The Icon Colour
+						{t("statusSetting.iconColorTitle")}
 					</Text>
 					<ColorPicker onChange={setColorInstockIcon} color={colorInstockIcon} disabled={isLoading} />
 				</>
@@ -274,7 +275,7 @@ function InventoryStatusSettings() {
 			isSelected && (
 				<>
 					<Text as="p">
-						Pick The Icon Colour
+						{t("statusSetting.iconColorTitle")}
 					</Text>
 					<ColorPicker onChange={setColorLowInventoryIcon} color={colorLowInventoryIcon} disabled={isLoading} />
 				</>
@@ -286,7 +287,7 @@ function InventoryStatusSettings() {
 			isSelected && (
 				<>
 					<Text as="p">
-						Pick The Icon Colour
+						{t("statusSetting.iconColorTitle")}
 					</Text>
 					<ColorPicker onChange={setColorPreorderIcon} color={colorPreorderIcon} disabled={isLoading} />
 				</>
@@ -298,7 +299,7 @@ function InventoryStatusSettings() {
 			isSelected && (
 				<>
 					<Text as="p">
-						Pick The Icon Colour
+						{t("statusSetting.iconColorTitle")}
 					</Text>
 					<ColorPicker onChange={setColorOutOfStockIcon} color={colorOutOfStockIcon} disabled={isLoading} />
 				</>
@@ -312,9 +313,9 @@ function InventoryStatusSettings() {
 			<Page
 				backAction={{ content: 'App Top', url: '/' }}
 				divider
-				title={"Inventory Status Setting"}
+				title={t("NavigationMenu.inventoryStatusSetting")}
 				primaryAction={{
-					content: "Save setting",
+					content: t("statusSetting.saveButton"),
 					onAction: handleSubmitSave,
 					disabled: isLoading,
 					loading: isLoading,
@@ -329,7 +330,7 @@ function InventoryStatusSettings() {
 						>
 							<VerticalStack gap="4">
 								<Text as="h3" variant="headingMd">
-									In Stock Status
+									{t("statusSetting.inStock.title")}
 								</Text>
 								<Text as="p" variant="bodyMd">
 
@@ -339,7 +340,7 @@ function InventoryStatusSettings() {
 						<AlphaCard roundedAbove="sm">
 							<VerticalStack gap="4">
 								<Checkbox
-									label="Show Status"
+									label={t("statusSetting.showFlgTitle")}
 									checked={showInstockFlg}
 									onChange={setShowInstockFlg}
 									disabled={isLoading}
@@ -348,10 +349,10 @@ function InventoryStatusSettings() {
 									<div style={{ margin: '0 var(--p-space-5)', }}>
 										<VerticalStack gap="4">
 											<ChoiceList
-												title="Status Icon"
+												title={t("statusSetting.iconTitle")}
 												choices={[
-													{ label: 'Show', value: 'icon', renderChildren: renderChildrenColorPickerInstock, },
-													{ label: 'Hide', value: 'none' },
+													{ label: t("statusSetting.iconShow"), value: 'icon', renderChildren: renderChildrenColorPickerInstock, },
+													{ label: t("statusSetting.iconHide"), value: 'none' },
 												]}
 												allowMultiple={false}
 												selected={instockIconType}
@@ -359,11 +360,11 @@ function InventoryStatusSettings() {
 												disabled={isLoading}
 											/>
 											<TextField
-												label="Status Message"
+												label={t("statusSetting.messageTitle")}
 												value={msgInstock}
 												onChange={setMsgInstock}
-												placeholder="Example: In stock"
-												helpText='Use the variable "{number}" to display the number of inventory'
+												placeholder={t("statusSetting.inStock.messagePlaceholder")}
+												helpText={t("statusSetting.inStock.messageHelp")}
 												disabled={isLoading}
 											/>
 										</VerticalStack>
@@ -381,7 +382,7 @@ function InventoryStatusSettings() {
 						>
 							<VerticalStack gap="4">
 								<Text as="h3" variant="headingMd">
-									Low Inventory Status
+									{t("statusSetting.lowStock.title")}
 								</Text>
 								<Text as="p" variant="bodyMd">
 
@@ -391,7 +392,7 @@ function InventoryStatusSettings() {
 						<AlphaCard roundedAbove="sm">
 							<VerticalStack gap="4">
 								<Checkbox
-									label="Show Status"
+									label={t("statusSetting.showFlgTitle")}
 									checked={showLowInventoryFlg}
 									onChange={setShowLowInventoryFlg}
 									disabled={isLoading}
@@ -400,10 +401,10 @@ function InventoryStatusSettings() {
 									<div style={{ margin: '0 var(--p-space-5)', }}>
 										<VerticalStack gap="4">
 											<ChoiceList
-												title="Status Icon"
+												title={t("statusSetting.iconTitle")}
 												choices={[
-													{ label: 'Show', value: 'icon', renderChildren: renderChildrenColorPickerLowInventory, },
-													{ label: 'Hide', value: 'none' },
+													{ label: t("statusSetting.iconShow"), value: 'icon', renderChildren: renderChildrenColorPickerLowInventory, },
+													{ label: t("statusSetting.iconHide"), value: 'none' },
 												]}
 												allowMultiple={false}
 												selected={lowInventoryIconType}
@@ -412,7 +413,7 @@ function InventoryStatusSettings() {
 											/>
 											<RangeSlider
 												output
-												label="Low inventory threshold"
+												label={t("statusSetting.lowStock.rangeTitle")}
 												min={1}
 												max={100}
 												value={rangeLowInventory}
@@ -431,11 +432,11 @@ function InventoryStatusSettings() {
 												disabled={isLoading}
 											/>
 											<TextField
-												label="Status Message"
+												label={t("statusSetting.messageTitle")}
 												value={msgLowInventory}
 												onChange={setMsgLowInventory}
-												placeholder="Example: Low stock only {number} item left"
-												helpText='Use the variable "{number}" to display the number of inventory'
+												placeholder={t("statusSetting.lowStock.messagePlaceholder")}
+												helpText={t("statusSetting.lowStock.messageHelp")}
 												disabled={isLoading}
 											/>
 										</VerticalStack>
@@ -453,17 +454,17 @@ function InventoryStatusSettings() {
 						>
 							<VerticalStack gap="4">
 								<Text as="h3" variant="headingMd">
-									Pre Order Status
+									{t("statusSetting.preOrder.title")}
 								</Text>
 								<Text as="p" variant="bodyMd">
-									To display the status, activate "Track quantity" and "Continue selling when out of stock" checkboxes in Inventory section on the product page
+									{t("statusSetting.preOrder.description")}
 								</Text>
 							</VerticalStack>
 						</Box>
 						<AlphaCard roundedAbove="sm">
 							<VerticalStack gap="4">
 								<Checkbox
-									label="Show Status"
+									label={t("statusSetting.showFlgTitle")}
 									checked={showPreorderFlg}
 									onChange={setShowPreorderFlg}
 									disabled={isLoading}
@@ -472,10 +473,10 @@ function InventoryStatusSettings() {
 									<div style={{ margin: '0 var(--p-space-5)', }}>
 										<VerticalStack gap="4">
 											<ChoiceList
-												title="Status Icon"
+												title={t("statusSetting.iconTitle")}
 												choices={[
-													{ label: 'Show', value: 'icon', renderChildren: renderChildrenColorPickerPreorder, },
-													{ label: 'Hide', value: 'none' },
+													{ label: t("statusSetting.iconShow"), value: 'icon', renderChildren: renderChildrenColorPickerPreorder, },
+													{ label: t("statusSetting.iconHide"), value: 'none' },
 												]}
 												allowMultiple={false}
 												selected={preorderIconType}
@@ -483,10 +484,10 @@ function InventoryStatusSettings() {
 												disabled={isLoading}
 											/>
 											<TextField
-												label="Status Message"
+												label={t("statusSetting.messageTitle")}
 												value={msgPreorder}
 												onChange={setMsgPreorder}
-												placeholder="Example: Pre order available 🎉"
+												placeholder={t("statusSetting.preOrder.messagePlaceholder")}
 												disabled={isLoading}
 											/>
 										</VerticalStack>
@@ -504,7 +505,7 @@ function InventoryStatusSettings() {
 						>
 							<VerticalStack gap="4">
 								<Text as="h3" variant="headingMd">
-									Out Of Stock Status
+									{t("statusSetting.outOfStock.title")}
 								</Text>
 								<Text as="p" variant="bodyMd">
 
@@ -514,7 +515,7 @@ function InventoryStatusSettings() {
 						<AlphaCard roundedAbove="sm">
 							<VerticalStack gap="4">
 								<Checkbox
-									label="Show Status"
+									label={t("statusSetting.showFlgTitle")}
 									checked={showOutOfStockFlg}
 									onChange={setShowOutOfStockFlg}
 									disabled={isLoading}
@@ -523,10 +524,10 @@ function InventoryStatusSettings() {
 									<div style={{ margin: '0 var(--p-space-5)', }}>
 										<VerticalStack gap="4">
 											<ChoiceList
-												title="Status Icon"
+												title={t("statusSetting.iconTitle")}
 												choices={[
-													{ label: 'Show', value: 'icon', renderChildren: renderChildrenColorPickerOutOfStock, },
-													{ label: 'Hide', value: 'none' },
+													{ label: t("statusSetting.iconShow"), value: 'icon', renderChildren: renderChildrenColorPickerOutOfStock, },
+													{ label: t("statusSetting.iconHide"), value: 'none' },
 												]}
 												allowMultiple={false}
 												selected={outOfStockIconType}
@@ -534,10 +535,10 @@ function InventoryStatusSettings() {
 												disabled={isLoading}
 											/>
 											<TextField
-												label="Status Message"
+												label={t("statusSetting.messageTitle")}
 												value={msgOutOfStock}
 												onChange={setMsgOutOfStock}
-												placeholder="Example: Out of stock..."
+												placeholder={t("statusSetting.outOfStock.messagePlaceholder")}
 												disabled={isLoading}
 											/>
 										</VerticalStack>
@@ -553,7 +554,7 @@ function InventoryStatusSettings() {
 								onClick={handleSubmitSave}
 								disabled={isLoading}
 								loading={isLoading}
-							>Save setting</Button>
+							>{t("statusSetting.saveButton")}</Button>
 						</div>
 					</HorizontalStack>
 				</VerticalStack>

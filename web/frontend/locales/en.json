@@ -22,6 +22,42 @@
     "pageName": "Page name",
     "inventoryStatusSetting": "Inventory Status Setting"
   },
+  "statusSetting": {
+	"inStock": {
+		"title": "In Stock Status",
+		"description": "",
+		"messagePlaceholder": "Example: In stock",
+		"messageHelp": "Use the variable \"{number}\" to display the number of inventory"
+	},
+	"lowStock": {
+		"title": "Low Inventory Status",
+		"description": "",
+		"rangeTitle": "Low inventory threshold",
+		"messagePlaceholder": "Example: Low stock only {number} item left",
+		"messageHelp": "Use the variable \"{number}\" to display the number of inventory"
+	},
+	"preOrder": {
+		"title": "Pre Order Status",
+		"description": "To display the status, go to the product page and activate \"Track quantity\" and \"Continue selling when out of stock\" checkboxes in Inventory section",
+		"messagePlaceholder": "Example: Pre order available 🎉",
+		"messageHelp": ""
+	},
+	"outOfStock": {
+		"title": "Out Of Stock Status",
+		"description": "",
+		"messagePlaceholder": "Example: Out of stock...",
+		"messageHelp": ""
+	},
+	"showFlgTitle": "Display Status",
+	"iconTitle": "Status Icon",
+	"iconShow": "Show",
+	"iconHide": "Hide",
+	"iconColorTitle": "Pick The Icon Colour",
+	"messageTitle": "Status Message",
+	"saveButton": "Save setting",
+	"saved": "Setting saved!",
+	"FailedSave": "Failed save"
+  },
   "NotFound": {
     "description": "Check the URL and try again, or use the search bar to find what you need.",
     "heading": "There is no page at this address"
