@@ -35,29 +35,29 @@ function InventoryStatusSettings() {
 	};
 	// initialize In stock status
 	const [showInstockFlg, setShowInstockFlg] = useState(false);
-	const [instockIconType, setInstockIconType] = useState(['icon']);
+	const [instockIconType, setInstockIconType] = useState(['none']);
 	const [colorInstockIcon, setColorInstockIcon] = useState(defaultColorGreen);
 	const [msgInstock, setMsgInstock] = useState('');
 	// initialize Low Invntory status
 	const [showLowInventoryFlg, setShowLowInventoryFlg] = useState(false);
-	const [lowInventoryIconType, setLowInventoryType] = useState(['icon']);
+	const [lowInventoryIconType, setLowInventoryType] = useState(['none']);
 	const [colorLowInventoryIcon, setColorLowInventoryIcon] = useState(defaultColorYellow);
 	const [rangeLowInventory, setRangeLowInventory] = useState(10);
 	const [msgLowInventory, setMsgLowInventory] = useState('');
 	// initialize pre order status
 	const [showPreorderFlg, setShowPreorderFlg] = useState(false);
-	const [preorderIconType, setPreorderIconType] = useState(['icon']);
+	const [preorderIconType, setPreorderIconType] = useState(['none']);
 	const [colorPreorderIcon, setColorPreorderIcon] = useState(defaultColorYellow);
 	const [msgPreorder, setMsgPreorder] = useState('');
 	// initialize out of stock status
 	const [showOutOfStockFlg, setShowOutOfStockFlg] = useState(false);
-	const [outOfStockIconType, setOutOfStockIconType] = useState(['icon']);
+	const [outOfStockIconType, setOutOfStockIconType] = useState(['none']);
 	const [colorOutOfStockIcon, setColorOutOfStockIcon] = useState(defaultColorGray);
 	const [msgOutOfStock, setMsgOutOfStock] = useState('');
 
 	const init = async () => {
 		try {
-			console.log('fetch: ' + metafieldsApiPath + '?namespace=' + namespace + '&key=' + key);
+			// console.log('fetch: ' + metafieldsApiPath + '?namespace=' + namespace + '&key=' + key);
 			let metafields = await fetch(metafieldsApiPath + '?namespace=' + namespace + '&key=' + key);
 			let value = {};
 			if (metafields.ok) {
@@ -205,41 +205,54 @@ function InventoryStatusSettings() {
 			},
 			body: JSON.stringify(data),
 		});
-		let res_meta_visibilities = null;
-		// metafield
 		if (response.ok) {
-			console.log(`Response ${metafieldsApiPath}:`, response);
-			res_meta_visibilities = await callMetafieldVisiblities();
+			setToastProps({
+				content: 'Setting saved!',
+			});
 		} else {
-			console.error(`Error: ${metafieldsApiPath}`, response);
 			setToastProps({
 				content: 'Failed save',
 				error: true,
 			});
 		}
+		// 
+		// I didnt need to call metafieldVisibility api...
+		// 
+		// let res_meta_visibilities = null;
+		// // metafield
+		// if (response.ok) {
+		// 	console.log(`Response ${metafieldsApiPath}:`, response);
+		// 	res_meta_visibilities = await callMetafieldVisiblities();
+		// } else {
+		// 	console.error(`Error: ${metafieldsApiPath}`, response);
+		// 	setToastProps({
+		// 		content: 'Failed save',
+		// 		error: true,
+		// 	});
+		// }
 
-		let res_meta_visibility_create = null;
-		// metafield storefront visibilities
-		if (res_meta_visibilities !== null && res_meta_visibilities.length > 0) {
-			setToastProps({
-				content: 'Setting saved!',
-			});
-		} else if (res_meta_visibilities !== null && res_meta_visibilities.length === 0) {
-			res_meta_visibility_create = await callMetafieldVisibleCreate();
-		}
+		// let res_meta_visibility_create = null;
+		// // metafield storefront visibilities
+		// if (res_meta_visibilities !== null && res_meta_visibilities.length > 0) {
+		// 	setToastProps({
+		// 		content: 'Setting saved!',
+		// 	});
+		// } else if (res_meta_visibilities !== null && res_meta_visibilities.length === 0) {
+		// 	res_meta_visibility_create = await callMetafieldVisibleCreate();
+		// }
 
-		if (res_meta_visibility_create?.ok) {
-			setToastProps({
-				content: 'Setting saved!',
-			});
-			console.log('res_meta_visibility_create', res_meta_visibility_create);
-		} else if (res_meta_visibility_create !== null) {
-			console.error(`Error: ${apiPath.metafieldStorefrontVisibilityCreate}`, res_meta_visibility_create);
-			setToastProps({
-				content: 'Failed save in process',
-				error: true,
-			});
-		}
+		// if (res_meta_visibility_create?.ok) {
+		// 	setToastProps({
+		// 		content: 'Setting saved!',
+		// 	});
+		// 	console.log('res_meta_visibility_create', res_meta_visibility_create);
+		// } else if (res_meta_visibility_create !== null) {
+		// 	console.error(`Error: ${apiPath.metafieldStorefrontVisibilityCreate}`, res_meta_visibility_create);
+		// 	setToastProps({
+		// 		content: 'Failed save in process',
+		// 		error: true,
+		// 	});
+		// }
 		setIsLoading(false);
 	};
 
@@ -251,7 +264,7 @@ function InventoryStatusSettings() {
 					<Text as="p">
 						Pick The Icon Colour
 					</Text>
-					<ColorPicker onChange={setColorInstockIcon} color={colorInstockIcon} />
+					<ColorPicker onChange={setColorInstockIcon} color={colorInstockIcon} disabled={isLoading} />
 				</>
 			),
 		[setColorInstockIcon, colorInstockIcon],
@@ -263,7 +276,7 @@ function InventoryStatusSettings() {
 					<Text as="p">
 						Pick The Icon Colour
 					</Text>
-					<ColorPicker onChange={setColorLowInventoryIcon} color={colorLowInventoryIcon} />
+					<ColorPicker onChange={setColorLowInventoryIcon} color={colorLowInventoryIcon} disabled={isLoading} />
 				</>
 			),
 		[setColorLowInventoryIcon, colorLowInventoryIcon],
@@ -275,7 +288,7 @@ function InventoryStatusSettings() {
 					<Text as="p">
 						Pick The Icon Colour
 					</Text>
-					<ColorPicker onChange={setColorPreorderIcon} color={colorPreorderIcon} />
+					<ColorPicker onChange={setColorPreorderIcon} color={colorPreorderIcon} disabled={isLoading} />
 				</>
 			),
 		[setColorPreorderIcon, colorPreorderIcon],
@@ -287,7 +300,7 @@ function InventoryStatusSettings() {
 					<Text as="p">
 						Pick The Icon Colour
 					</Text>
-					<ColorPicker onChange={setColorOutOfStockIcon} color={colorOutOfStockIcon} />
+					<ColorPicker onChange={setColorOutOfStockIcon} color={colorOutOfStockIcon} disabled={isLoading} />
 				</>
 			),
 		[setColorOutOfStockIcon, colorOutOfStockIcon],
@@ -299,7 +312,7 @@ function InventoryStatusSettings() {
 			<Page
 				backAction={{ content: 'App Top', url: '/' }}
 				divider
-				title={"Inventory Status Settings"}
+				title={"Inventory Status Setting"}
 				primaryAction={{
 					content: "Save setting",
 					onAction: handleSubmitSave,
@@ -319,7 +332,7 @@ function InventoryStatusSettings() {
 									In Stock Status
 								</Text>
 								<Text as="p" variant="bodyMd">
-									In Stock Status's discription
+
 								</Text>
 							</VerticalStack>
 						</Box>
@@ -329,6 +342,7 @@ function InventoryStatusSettings() {
 									label="Show Status"
 									checked={showInstockFlg}
 									onChange={setShowInstockFlg}
+									disabled={isLoading}
 								/>
 								<Collapsible open={showInstockFlg}>
 									<div style={{ margin: '0 var(--p-space-5)', }}>
@@ -342,11 +356,15 @@ function InventoryStatusSettings() {
 												allowMultiple={false}
 												selected={instockIconType}
 												onChange={setInstockIconType}
+												disabled={isLoading}
 											/>
 											<TextField
 												label="Status Message"
 												value={msgInstock}
 												onChange={setMsgInstock}
+												placeholder="Example: In stock"
+												helpText='Use the variable "{number}" to display the number of inventory'
+												disabled={isLoading}
 											/>
 										</VerticalStack>
 									</div>
@@ -366,7 +384,7 @@ function InventoryStatusSettings() {
 									Low Inventory Status
 								</Text>
 								<Text as="p" variant="bodyMd">
-									Low Inventory's discription
+
 								</Text>
 							</VerticalStack>
 						</Box>
@@ -376,6 +394,7 @@ function InventoryStatusSettings() {
 									label="Show Status"
 									checked={showLowInventoryFlg}
 									onChange={setShowLowInventoryFlg}
+									disabled={isLoading}
 								/>
 								<Collapsible open={showLowInventoryFlg}>
 									<div style={{ margin: '0 var(--p-space-5)', }}>
@@ -389,6 +408,7 @@ function InventoryStatusSettings() {
 												allowMultiple={false}
 												selected={lowInventoryIconType}
 												onChange={setLowInventoryType}
+												disabled={isLoading}
 											/>
 											<RangeSlider
 												output
@@ -408,11 +428,15 @@ function InventoryStatusSettings() {
 														{rangeLowInventory}
 													</p>
 												}
+												disabled={isLoading}
 											/>
 											<TextField
 												label="Status Message"
 												value={msgLowInventory}
 												onChange={setMsgLowInventory}
+												placeholder="Example: Low stock only {number} item left"
+												helpText='Use the variable "{number}" to display the number of inventory'
+												disabled={isLoading}
 											/>
 										</VerticalStack>
 									</div>
@@ -432,7 +456,7 @@ function InventoryStatusSettings() {
 									Pre Order Status
 								</Text>
 								<Text as="p" variant="bodyMd">
-									Pre Order Status's discription
+									To display the status, activate "Track quantity" and "Continue selling when out of stock" checkboxes in Inventory section on the product page
 								</Text>
 							</VerticalStack>
 						</Box>
@@ -442,6 +466,7 @@ function InventoryStatusSettings() {
 									label="Show Status"
 									checked={showPreorderFlg}
 									onChange={setShowPreorderFlg}
+									disabled={isLoading}
 								/>
 								<Collapsible open={showPreorderFlg}>
 									<div style={{ margin: '0 var(--p-space-5)', }}>
@@ -455,11 +480,14 @@ function InventoryStatusSettings() {
 												allowMultiple={false}
 												selected={preorderIconType}
 												onChange={setPreorderIconType}
+												disabled={isLoading}
 											/>
 											<TextField
 												label="Status Message"
 												value={msgPreorder}
 												onChange={setMsgPreorder}
+												placeholder="Example: Pre order available 🎉"
+												disabled={isLoading}
 											/>
 										</VerticalStack>
 									</div>
@@ -479,7 +507,7 @@ function InventoryStatusSettings() {
 									Out Of Stock Status
 								</Text>
 								<Text as="p" variant="bodyMd">
-									Out Of Stock Status's discription
+
 								</Text>
 							</VerticalStack>
 						</Box>
@@ -489,6 +517,7 @@ function InventoryStatusSettings() {
 									label="Show Status"
 									checked={showOutOfStockFlg}
 									onChange={setShowOutOfStockFlg}
+									disabled={isLoading}
 								/>
 								<Collapsible open={showOutOfStockFlg}>
 									<div style={{ margin: '0 var(--p-space-5)', }}>
@@ -502,11 +531,14 @@ function InventoryStatusSettings() {
 												allowMultiple={false}
 												selected={outOfStockIconType}
 												onChange={setOutOfStockIconType}
+												disabled={isLoading}
 											/>
 											<TextField
 												label="Status Message"
 												value={msgOutOfStock}
 												onChange={setMsgOutOfStock}
+												placeholder="Example: Out of stock..."
+												disabled={isLoading}
 											/>
 										</VerticalStack>
 									</div>
@@ -515,12 +547,14 @@ function InventoryStatusSettings() {
 						</AlphaCard>
 					</HorizontalGrid>
 					<HorizontalStack align="end">
-						<Button
-							primary
-							onClick={handleSubmitSave}
-							disabled={isLoading}
-							loading={isLoading}
-						>Save setting</Button>
+						<div style={{ margin: 'var(--p-space-5) 0', }}>
+							<Button
+								primary
+								onClick={handleSubmitSave}
+								disabled={isLoading}
+								loading={isLoading}
+							>Save setting</Button>
+						</div>
 					</HorizontalStack>
 				</VerticalStack>
 			</Page>

@@ -7,9 +7,20 @@
     "trophyAltText": "Gute Arbeit beim Erstellen einer Shopify-App",
     "yourAppIsReadyToExplore": "Deine App kann nun erkundet werden! Sie enthält alles, was du brauchst, um loszulegen: das <PolarisLink>Polaris Designsystem</PolarisLink>, die <AdminApiLink>Shopify Admin API</AdminApiLink> und die <AppBridgeLink>App Bridge</AppBridgeLink>-UI-Bibliothek sowie entsprechende Komponenten."
   },
+  "CustomizeInventoryStatus": {
+	"title": "Customize Inventory Status 💡",
+	"discription": "The inventory status in our app allows you to personalize and display custom messages for different inventory statuses on your store.",
+	"message1": "Here's how it works:",
+	"step1title": "1. Customice Inventory Status",
+	"step1-1": "Activate the inventory status on the Inventory Status Setting page.",
+	"step1-2": "You can input your desired custom inventory status messages.",
+	"step2title": "2. Display on Your Store",
+	"step2-1": "Add our app block to your preferred section on the theme customization page of your Shopify admin panel.",
+	"message2": "That's it! With our custom inventory status, you can enhance the shopping experience for your customers by providing clear and personalized messages."
+  },
   "NavigationMenu": {
     "pageName": "Seitenname",
-    "inventoryStatusSetting": "Inventory Status Settings"
+    "inventoryStatusSetting": "Inventory Status Setting"
   },
   "NotFound": {
     "description": "Überprüfe die URL und versuche es erneut. Alternativ kannst du die Suchleiste verwenden, um zu finden, was du suchst.",
