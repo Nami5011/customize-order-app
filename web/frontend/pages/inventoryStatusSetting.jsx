@@ -100,6 +100,8 @@ function InventoryStatusSettings() {
 			setIsLoading(false);
 		} catch (err) {
 			console.error('Catch Error:', err);
+			let errData = await err.json();
+			console.error('message', errData);
 			setIsLoading(false);
 		}
 	}
