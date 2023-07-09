@@ -34,6 +34,12 @@
 	animation: inventory-pulse-icon25 2s linear infinite;
 }
 
+.inventory_list__custom {
+	display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+}
+
 .inventory_list_block__custom, .inventory_list__custom {
 	list-style: none!important;
 }
@@ -41,6 +47,10 @@
 .inventory_list_block__custom {
 	padding-left: 0;
 	margin-left: 0;
+
+	/* alt japansk theme custom */
+	margin-bottom: 30px!important;
+	margin-top: -20px!important;
 }
 
 /* in style tag in liquid */

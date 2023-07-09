@@ -23,7 +23,7 @@
           {% assign icon_color = appSettings.rgbColorLowInventoryIcon %}
           <span class="icon_inventory__custom"></span>
         {% endif %}
-        {{ message_lowinventory }}
+        <span>{{ message_lowinventory }}</span>
       </li>
     </ul>
 
@@ -34,7 +34,7 @@
           {% assign icon_color = appSettings.rgbColorInstockIcon %}
           <span class="icon_inventory__custom"></span>
         {% endif %}
-        {{ message_instock }}
+        <span>{{ message_instock }}</span>
       </li>
     </ul>
   {% endif %}
@@ -47,7 +47,7 @@
           {% assign icon_color = appSettings.rgbColorPreorderIcon %}
           <span class="icon_inventory__custom"></span>
         {% endif %}
-        {{ appSettings.msgPreorder }}
+        <span>{{ appSettings.msgPreorder }}</span>
       </li>
     </ul>
 
@@ -58,7 +58,7 @@
           {% assign icon_color = appSettings.rgbColorOutOfStockIcon %}
           <span class="icon_inventory__custom"></span>
         {% endif %}
-        {{ appSettings.msgOutOfStock }}
+        <span>{{ appSettings.msgOutOfStock }}</span>
       </li>
     </ul>
   {% endif %}
