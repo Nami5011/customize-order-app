@@ -54,6 +54,7 @@
 	"iconHide": "Hide",
 	"iconColorTitle": "Pick The Icon Colour",
 	"messageTitle": "Status Message",
+	"textColor": "Text Colour",
 	"saveButton": "Save setting",
 	"saved": "Setting saved!",
 	"FailedSave": "Failed save"
