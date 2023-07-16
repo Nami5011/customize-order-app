@@ -1,11 +1,14 @@
-import { VerticalStack, HorizontalGrid, Box, Page, Text, AlphaCard, TextField, Checkbox, Collapsible, ChoiceList, ColorPicker, RangeSlider, HorizontalStack, Button } from "@shopify/polaris";
+import {
+	VerticalStack, HorizontalGrid, Box, Page, Text, AlphaCard, TextField, Checkbox, Collapsible, ChoiceList, ColorPicker, RangeSlider, HorizontalStack, Button,
+	hsbToHex, rgbToHsb
+} from "@shopify/polaris";
 import { TitleBar, Toast } from "@shopify/app-bridge-react";
 import { useTranslation, Trans } from "react-i18next";
 import { useState, useEffect, useCallback } from 'react';
 import { useAppQuery, useAuthenticatedFetch } from "../hooks";
 import { apiPath, apiParam, ownerType } from '../../common-variable';
 import { CustomColorPicker } from "../components";
-import { hsbToRgb } from "../utils/colorConvert";
+import { hsbToRgb, hexToRgbObject } from "../utils/colorConvert";
 
 function InventoryStatusSettings() {
 	const { t } = useTranslation();
@@ -17,55 +20,64 @@ function InventoryStatusSettings() {
 		<Toast {...toastProps} onDismiss={() => setToastProps(emptyToastProps)} />
 	);
 
+	const hexToHsb = (hex) => {
+		return rgbToHsb(hexToRgbObject(hex));
+	}
+	const isValidHex = (hex) => {
+		return hexToRgbObject(hex) ? true : false;
+	}
+	const handleHexChange = (value, setHsb, setHex) => {
+		if (isValidHex(value)) {
+			setHsb(hexToHsb(value));
+		}
+		setHex(value);
+	}
+	const handleHsbChange = (value, setHsb, setHex) => {
+		setHsb(value);
+		setHex(hsbToHex(value));
+	}
+
 	const fetch = useAuthenticatedFetch();
 	const metafieldsApiPath = apiPath.metafields;
 	const namespace = apiParam.metafields.namespace;
 	const key = apiParam.metafields.key;
-	const defaultColorGreen = {
-		hue: 120,
-		brightness: 1,
-		saturation: 1,
-	};
-	const defaultColorYellow = {
-		hue: 60,
-		brightness: 1,
-		saturation: 1,
-	};
-	const defaultColorGray = {
-		hue: 240,
-		brightness: 0.5,
-		saturation: 0,
-	};
-	const defaultColorBlack = {
-		hue: 240,
-		brightness: 0,
-		saturation: 0,
-	};
+	const defaultColorGreen = '#32CD32';
+	const defaultColorYellow = '#FFA500';
+	const defaultColorGray = '#808080';
+	const defaultColorBlack = '#000000';
 	// initialize In stock status
 	const [showInstockFlg, setShowInstockFlg] = useState(false);
-	const [instockIconType, setInstockIconType] = useState(['none']);
-	const [colorInstockIcon, setColorInstockIcon] = useState(defaultColorGreen);
+	const [iconTypeInstock, setIconTypeInstock] = useState(['none']);
+	const [colorIconInstock, setColorIconInstock] = useState(hexToHsb(defaultColorGreen));
+	const [hexIconInstock, setHexIconInstock] = useState(defaultColorGreen);
 	const [msgInstock, setMsgInstock] = useState('');
-	const [msgColorInstock, setMsgColorInstock] = useState(defaultColorBlack);
+	const [colorMsgInstock, setColorMsgInstock] = useState(hexToHsb(defaultColorBlack));
+	const [hexMsgInstock, setHexMsgInstock] = useState(defaultColorBlack);
 	// initialize Low Invntory status
 	const [showLowInventoryFlg, setShowLowInventoryFlg] = useState(false);
-	const [lowInventoryIconType, setLowInventoryType] = useState(['none']);
-	const [colorLowInventoryIcon, setColorLowInventoryIcon] = useState(defaultColorYellow);
+	const [iconTypeLowInventory, setIconTypeLowInventory] = useState(['none']);
+	const [colorIconLowInventory, setColorIconLowInventory] = useState(hexToHsb(defaultColorYellow));
+	const [hexIconLowInventory, setHexIconLowInventory] = useState(defaultColorYellow);
 	const [rangeLowInventory, setRangeLowInventory] = useState(10);
 	const [msgLowInventory, setMsgLowInventory] = useState('');
-	const [msgColorLowInventory, setMsgColorLowInventory] = useState(defaultColorBlack);
+	const [colorMsgLowInventory, setColorMsgLowInventory] = useState(hexToHsb(defaultColorBlack));
+	const [hexMsgLowInventory, setHexMsgLowInventory] = useState(defaultColorBlack);
 	// initialize pre order status
 	const [showPreorderFlg, setShowPreorderFlg] = useState(false);
-	const [preorderIconType, setPreorderIconType] = useState(['none']);
-	const [colorPreorderIcon, setColorPreorderIcon] = useState(defaultColorYellow);
+	const [iconTypePreorder, setIconTypePreorder] = useState(['none']);
+	const [colorIconPreorder, setColorIconPreorder] = useState(hexToHsb(defaultColorYellow));
+	const [hexIconPreorder, setHexIconPreorder] = useState(defaultColorYellow);
 	const [msgPreorder, setMsgPreorder] = useState('');
-	const [msgColorPreorder, setMsgColorPreorder] = useState(defaultColorBlack);
+	const [colorMsgPreorder, setColorMsgPreorder] = useState(hexToHsb(defaultColorBlack));
+	const [hexMsgPreorder, setHexMsgPreorder] = useState(defaultColorBlack);
 	// initialize out of stock status
 	const [showOutOfStockFlg, setShowOutOfStockFlg] = useState(false);
-	const [outOfStockIconType, setOutOfStockIconType] = useState(['none']);
-	const [colorOutOfStockIcon, setColorOutOfStockIcon] = useState(defaultColorGray);
+	const [iconTypeOutOfStock, setIconTypeOutOfStock] = useState(['none']);
+	const [colorIconOutOfStock, setColorIconOutOfStock] = useState(hexToHsb(defaultColorGray));
+	const [hexIconOutOfStock, setHexIconOutOfStock] = useState(defaultColorGray);
 	const [msgOutOfStock, setMsgOutOfStock] = useState('');
-	const [msgColorOutOfStock, setMsgColorOutOfStock] = useState(defaultColorBlack);
+	const [colorMsgOutOfStock, setColorMsgOutOfStock] = useState(hexToHsb(defaultColorBlack));
+	const [hexMsgOutOfStock, setHexMsgOutOfStock] = useState(defaultColorBlack);
 
 	const init = async () => {
 		try {
@@ -85,29 +97,37 @@ function InventoryStatusSettings() {
 				console.log('response data:', data);
 				// set the data in form
 				setShowInstockFlg(value.showInstockFlg ?? false);
-				setInstockIconType(value.instockIconType ?? ['icon']);
-				setColorInstockIcon(value.colorInstockIcon ?? defaultColorGreen);
+				setIconTypeInstock(value.iconTypeInstock ?? ['icon']);
+				setColorIconInstock(hexToHsb(value.hexIconInstock ? value.hexIconInstock : defaultColorGreen));
+				setHexIconInstock(value.hexIconInstock ? value.hexIconInstock : defaultColorGreen);
 				setMsgInstock(value.msgInstock ?? '');
-				setMsgColorInstock(value.msgColorInstock ?? defaultColorBlack);
+				setColorMsgInstock(hexToHsb(value.hexMsgInstock ? value.hexMsgInstock : defaultColorBlack));
+				setHexMsgInstock(value.hexMsgInstock ? value.hexMsgInstock : defaultColorBlack);
 
 				setShowLowInventoryFlg(value.showLowInventoryFlg ?? false);
-				setLowInventoryType(value.lowInventoryIconType ?? ['icon']);
-				setColorLowInventoryIcon(value.colorLowInventoryIcon ?? defaultColorYellow);
-				setRangeLowInventory(value.rangeLowInventory ?? 10);
+				setIconTypeLowInventory(value.iconTypeLowInventory ?? ['icon']);
+				setColorIconLowInventory(hexToHsb(value.hexIconLowInventory ? value.hexIconLowInventory : defaultColorYellow));
+				setHexIconLowInventory(value.hexIconLowInventory ? value.hexIconLowInventory : defaultColorYellow);
+				setRangeLowInventory(value.rangeLowInventory ?? 3);
 				setMsgLowInventory(value.msgLowInventory ?? '');
-				setMsgColorLowInventory(value.msgColorLowInventory ?? defaultColorBlack);
+				setColorMsgLowInventory(hexToHsb(value.hexMsgLowInventory ? value.hexMsgLowInventory : defaultColorBlack));
+				setHexMsgLowInventory(value.hexMsgLowInventory ? value.hexMsgLowInventory : defaultColorBlack);
 
 				setShowPreorderFlg(value.showPreorderFlg ?? false);
-				setPreorderIconType(value.preorderIconType ?? ['icon']);
-				setColorPreorderIcon(value.colorPreorderIcon ?? defaultColorYellow);
+				setIconTypePreorder(value.iconTypePreorder ?? ['icon']);
+				setColorIconPreorder(hexToHsb(value.hexIconPreorder ? value.hexIconPreorder : defaultColorYellow));
+				setHexIconPreorder(value.hexIconPreorder ? value.hexIconPreorder : defaultColorYellow);
 				setMsgPreorder(value.msgPreorder ?? '');
-				setMsgColorPreorder(value.msgColorPreorder ?? defaultColorBlack);
+				setColorMsgPreorder(hexToHsb(value.hexMsgPreorder ? value.hexMsgPreorder : defaultColorBlack));
+				setHexMsgPreorder(value.hexMsgPreorder ? value.hexMsgPreorder : defaultColorBlack);
 
 				setShowOutOfStockFlg(value.showOutOfStockFlg ?? false);
-				setOutOfStockIconType(value.outOfStockIconType ?? ['icon']);
-				setColorOutOfStockIcon(value.colorOutOfStockIcon ?? defaultColorGray);
+				setIconTypeOutOfStock(value.iconTypeOutOfStock ?? ['icon']);
+				setColorIconOutOfStock(hexToHsb(value.hexIconOutOfStock ? value.hexIconOutOfStock : defaultColorGray));
+				setHexIconOutOfStock(value.hexIconOutOfStock ? value.hexIconOutOfStock : defaultColorGray);
 				setMsgOutOfStock(value.msgOutOfStock ?? '');
-				setMsgColorOutOfStock(value.msgColorOutOfStock ?? defaultColorBlack);
+				setColorMsgOutOfStock(hexToHsb(value.hexMsgOutOfStock ? value.hexMsgOutOfStock : defaultColorBlack));
+				setHexMsgOutOfStock(value.hexMsgOutOfStock ? value.hexMsgOutOfStock : defaultColorBlack);
 			} else {
 				// handle error
 				console.error('Error:', metafields);
@@ -131,37 +151,29 @@ function InventoryStatusSettings() {
 		data.namespace = namespace;
 		data.key = key;
 		value.showInstockFlg = showInstockFlg;
-		value.instockIconType = instockIconType;
-		value.colorInstockIcon = colorInstockIcon;
-		value.rgbColorInstockIcon = hsbToRgb(colorInstockIcon.hue, colorInstockIcon.saturation, colorInstockIcon.brightness);
+		value.iconTypeInstock = iconTypeInstock;
+		value.hexIconInstock = hexIconInstock;
 		value.msgInstock = msgInstock;
-		value.msgColorInstock = msgColorInstock;
-		value.rgbMsgColorInstock = hsbToRgb(msgColorInstock.hue, msgColorInstock.saturation, msgColorInstock.brightness);
+		value.hexMsgInstock = hexMsgInstock;
 
 		value.showLowInventoryFlg = showLowInventoryFlg;
-		value.lowInventoryIconType = lowInventoryIconType;
-		value.colorLowInventoryIcon = colorLowInventoryIcon;
-		value.rgbColorLowInventoryIcon = hsbToRgb(colorLowInventoryIcon.hue, colorLowInventoryIcon.saturation, colorLowInventoryIcon.brightness);
+		value.iconTypeLowInventory = iconTypeLowInventory;
+		value.hexIconLowInventory = hexIconLowInventory;
 		value.rangeLowInventory = rangeLowInventory;
 		value.msgLowInventory = msgLowInventory;
-		value.msgColorLowInventory = msgColorLowInventory;
-		value.rgbMsgColorLowInventory = hsbToRgb(msgColorLowInventory.hue, msgColorLowInventory.saturation, msgColorLowInventory.brightness);
+		value.hexMsgLowInventory = hexMsgLowInventory;
 
 		value.showPreorderFlg = showPreorderFlg;
-		value.preorderIconType = preorderIconType;
-		value.colorPreorderIcon = colorPreorderIcon;
-		value.rgbColorPreorderIcon = hsbToRgb(colorPreorderIcon.hue, colorPreorderIcon.saturation, colorPreorderIcon.brightness);
+		value.iconTypePreorder = iconTypePreorder;
+		value.hexIconPreorder = hexIconPreorder;
 		value.msgPreorder = msgPreorder;
-		value.msgColorPreorder = msgColorPreorder;
-		value.rgbMsgColorPreorder = hsbToRgb(msgColorPreorder.hue, msgColorPreorder.saturation, msgColorPreorder.brightness);
+		value.hexMsgPreorder = hexMsgPreorder;
 
 		value.showOutOfStockFlg = showOutOfStockFlg;
-		value.outOfStockIconType = outOfStockIconType;
-		value.colorOutOfStockIcon = colorOutOfStockIcon;
-		value.rgbColorOutOfStockIcon = hsbToRgb(colorOutOfStockIcon.hue, colorOutOfStockIcon.saturation, colorOutOfStockIcon.brightness);
+		value.iconTypeOutOfStock = iconTypeOutOfStock;
+		value.hexIconOutOfStock = hexIconOutOfStock;
 		value.msgOutOfStock = msgOutOfStock;
-		value.msgColorOutOfStock = msgColorOutOfStock;
-		value.rgbMsgColorOutOfStock = hsbToRgb(msgColorOutOfStock.hue, msgColorOutOfStock.saturation, msgColorOutOfStock.brightness);
+		value.hexMsgOutOfStock = hexMsgOutOfStock;
 
 		data.value = value;
 		return data;
@@ -205,7 +217,29 @@ function InventoryStatusSettings() {
 		return response;
 	};
 
+	const isInvalidHexInputs = () => {
+		if (!isValidHex(hexIconInstock)
+			|| !isValidHex(hexMsgInstock)
+			|| !isValidHex(hexIconLowInventory)
+			|| !isValidHex(hexMsgLowInventory)
+			|| !isValidHex(hexIconPreorder)
+			|| !isValidHex(hexMsgPreorder)
+			|| !isValidHex(hexIconOutOfStock)
+			|| !isValidHex(hexMsgOutOfStock)
+		) {
+			return true;
+		}
+		return false;
+	}
+
 	const handleSubmitSave = async () => {
+		if (isInvalidHexInputs()) {
+			setToastProps({
+				content: t("statusSetting.invaildHex"),
+				error: true,
+			});
+			return;
+		}
 		setIsLoading(true);
 		let data = getSaveData();
 		// call the api to save
@@ -273,48 +307,80 @@ function InventoryStatusSettings() {
 			isSelected && (
 				<CustomColorPicker
 					title={t("statusSetting.iconColorTitle")}
-					setColor={setColorInstockIcon}
-					color={colorInstockIcon}
+					setColor={value => handleHsbChange(value, setColorIconInstock, setHexIconInstock)}
+					color={colorIconInstock}
+					setHex={value => handleHexChange(value, setColorIconInstock, setHexIconInstock)}
+					hex={hexIconInstock}
 					disabled={isLoading}
 				/>
 			),
-		[setColorInstockIcon, colorInstockIcon],
+		[
+			setColorIconInstock,
+			colorIconInstock,
+			setHexIconInstock,
+			hexIconInstock,
+			isLoading
+		],
 	);
 	const renderChildrenColorPickerLowInventory = useCallback(
 		(isSelected) =>
 			isSelected && (
 				<CustomColorPicker
 					title={t("statusSetting.iconColorTitle")}
-					setColor={setColorLowInventoryIcon}
-					color={colorLowInventoryIcon}
+					setColor={value => handleHsbChange(value, setColorIconLowInventory, setHexIconLowInventory)}
+					color={colorIconLowInventory}
+					setHex={value => handleHexChange(value, setColorIconLowInventory, setHexIconLowInventory)}
+					hex={hexIconLowInventory}
 					disabled={isLoading}
 				/>
 			),
-		[setColorLowInventoryIcon, colorLowInventoryIcon],
+		[
+			setColorIconLowInventory,
+			colorIconLowInventory,
+			setHexIconLowInventory,
+			hexIconLowInventory,
+			isLoading
+		],
 	);
 	const renderChildrenColorPickerPreorder = useCallback(
 		(isSelected) =>
 			isSelected && (
 				<CustomColorPicker
 					title={t("statusSetting.iconColorTitle")}
-					setColor={setColorPreorderIcon}
-					color={colorPreorderIcon}
+					setColor={value => handleHsbChange(value, setColorIconPreorder, setHexIconPreorder)}
+					color={colorIconPreorder}
+					setHex={value => handleHexChange(value, setColorIconPreorder, setHexIconPreorder)}
+					hex={hexIconPreorder}
 					disabled={isLoading}
 				/>
 			),
-		[setColorPreorderIcon, colorPreorderIcon],
+		[
+			setColorIconPreorder,
+			colorIconPreorder,
+			setHexIconPreorder,
+			hexIconPreorder,
+			isLoading
+		],
 	);
 	const renderChildrenColorPickerOutOfStock = useCallback(
 		(isSelected) =>
 			isSelected && (
 				<CustomColorPicker
 					title={t("statusSetting.iconColorTitle")}
-					setColor={setColorOutOfStockIcon}
-					color={colorOutOfStockIcon}
+					setColor={value => handleHsbChange(value, setColorIconOutOfStock, setHexIconOutOfStock)}
+					color={colorIconOutOfStock}
+					setHex={value => handleHexChange(value, setColorIconOutOfStock, setHexIconOutOfStock)}
+					hex={hexIconOutOfStock}
 					disabled={isLoading}
 				/>
 			),
-		[setColorOutOfStockIcon, colorOutOfStockIcon],
+		[
+			setColorIconOutOfStock,
+			colorIconOutOfStock,
+			setHexIconOutOfStock,
+			hexIconOutOfStock,
+			isLoading
+		],
 	);
 
 	return (
@@ -365,8 +431,8 @@ function InventoryStatusSettings() {
 													{ label: t("statusSetting.iconHide"), value: 'none' },
 												]}
 												allowMultiple={false}
-												selected={instockIconType}
-												onChange={setInstockIconType}
+												selected={iconTypeInstock}
+												onChange={setIconTypeInstock}
 												disabled={isLoading}
 											/>
 											<TextField
@@ -379,8 +445,10 @@ function InventoryStatusSettings() {
 											/>
 											<CustomColorPicker
 												title={t("statusSetting.textColor")}
-												setColor={setMsgColorInstock}
-												color={msgColorInstock}
+												setColor={useCallback(value => handleHsbChange(value, setColorMsgInstock, setHexMsgInstock), [])}
+												color={colorMsgInstock}
+												setHex={useCallback(value => handleHexChange(value, setColorMsgInstock, setHexMsgInstock), [])}
+												hex={hexMsgInstock}
 												disabled={isLoading}
 											/>
 										</VerticalStack>
@@ -423,8 +491,8 @@ function InventoryStatusSettings() {
 													{ label: t("statusSetting.iconHide"), value: 'none' },
 												]}
 												allowMultiple={false}
-												selected={lowInventoryIconType}
-												onChange={setLowInventoryType}
+												selected={iconTypeLowInventory}
+												onChange={setIconTypeLowInventory}
 												disabled={isLoading}
 											/>
 											<RangeSlider
@@ -457,8 +525,10 @@ function InventoryStatusSettings() {
 											/>
 											<CustomColorPicker
 												title={t("statusSetting.textColor")}
-												setColor={setMsgColorLowInventory}
-												color={msgColorLowInventory}
+												setColor={useCallback(value => handleHsbChange(value, setColorMsgLowInventory, setHexMsgLowInventory), [])}
+												color={colorMsgLowInventory}
+												setHex={useCallback(value => handleHexChange(value, setColorMsgLowInventory, setHexMsgLowInventory), [])}
+												hex={hexMsgLowInventory}
 												disabled={isLoading}
 											/>
 										</VerticalStack>
@@ -501,8 +571,8 @@ function InventoryStatusSettings() {
 													{ label: t("statusSetting.iconHide"), value: 'none' },
 												]}
 												allowMultiple={false}
-												selected={preorderIconType}
-												onChange={setPreorderIconType}
+												selected={iconTypePreorder}
+												onChange={setIconTypePreorder}
 												disabled={isLoading}
 											/>
 											<TextField
@@ -514,8 +584,10 @@ function InventoryStatusSettings() {
 											/>
 											<CustomColorPicker
 												title={t("statusSetting.textColor")}
-												setColor={setMsgColorPreorder}
-												color={msgColorPreorder}
+												setColor={useCallback(value => handleHsbChange(value, setColorMsgPreorder, setHexMsgPreorder), [])}
+												color={colorMsgPreorder}
+												setHex={useCallback(value => handleHexChange(value, setColorMsgPreorder, setHexMsgPreorder), [])}
+												hex={hexMsgPreorder}
 												disabled={isLoading}
 											/>
 										</VerticalStack>
@@ -558,8 +630,8 @@ function InventoryStatusSettings() {
 													{ label: t("statusSetting.iconHide"), value: 'none' },
 												]}
 												allowMultiple={false}
-												selected={outOfStockIconType}
-												onChange={setOutOfStockIconType}
+												selected={iconTypeOutOfStock}
+												onChange={setIconTypeOutOfStock}
 												disabled={isLoading}
 											/>
 											<TextField
@@ -571,8 +643,10 @@ function InventoryStatusSettings() {
 											/>
 											<CustomColorPicker
 												title={t("statusSetting.textColor")}
-												setColor={setMsgColorOutOfStock}
-												color={msgColorOutOfStock}
+												setColor={useCallback(value => handleHsbChange(value, setColorMsgOutOfStock, setHexMsgOutOfStock), [])}
+												color={colorMsgOutOfStock}
+												setHex={useCallback(value => handleHexChange(value, setColorMsgOutOfStock, setHexMsgOutOfStock), [])}
+												hex={hexMsgOutOfStock}
 												disabled={isLoading}
 											/>
 										</VerticalStack>

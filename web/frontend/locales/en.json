@@ -57,6 +57,7 @@
 	"textColor": "Text Colour",
 	"saveButton": "Save setting",
 	"saved": "Setting saved!",
+	"invaildHex": "Error: Hex colour is invalid",
 	"FailedSave": "Failed save"
   },
   "NotFound": {

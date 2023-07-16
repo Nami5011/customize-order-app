@@ -17,14 +17,24 @@
       var elements = document.body.querySelectorAll('*');
       var checkout_elements = [];
       var addcart_elements = [];
-      elements.forEach(function (elm) {
-        if (elm.innerHTML && elm.innerHTML.trim().toLowerCase() === checkout_default_button_name.trim().toLowerCase()) {
-          checkout_elements.push(elm);
-        }
-        if (elm.innerHTML && elm.innerHTML.trim().toLowerCase() === addcart_default_button_name.trim().toLowerCase()) {
-          addcart_elements.push(elm);
-        }
-      });
+      if (checkout_default_button_name || addcart_default_button_name) {
+        elements.forEach(function (elm) {
+          if (
+            elm.innerHTML &&
+            checkout_default_button_name &&
+            elm.innerHTML.trim().toLowerCase() === checkout_default_button_name.trim().toLowerCase()
+          ) {
+            checkout_elements.push(elm);
+          }
+          if (
+            elm.innerHTML &&
+            addcart_default_button_name &&
+            elm.innerHTML.trim().toLowerCase() === addcart_default_button_name.trim().toLowerCase()
+          ) {
+            addcart_elements.push(elm);
+          }
+        });
+      }
       // console.log('checkout element', checkout_elements);
       // console.log('addcart element', addcart_elements);
       if (checkout_elements.length > 0) {
@@ -40,10 +50,15 @@
     };
 
     document.addEventListener('DOMContentLoaded', function () {
-      setTimeout(modifyContents);
+      modifyContents();
+      // setTimeout(modifyContents);
+      setInterval(modifyContents, 100);
     });
+    // document.addEventListener('readystatechange', (event) => {
+    // });
     window.addEventListener('load', function () {
-      setTimeout(modifyContents);
+      modifyContents();
+      clearInterval(modifyContents);
     });
   </script>
   {% if settings.checkout_preorder_button_class != blank %}
@@ -51,7 +66,8 @@
       .{{ settings.checkout_preorder_button_class | replace: '.', '' }} {
           background-color: {{ settings.checkout_button_color }}!important;
           color: {{ settings.checkout_text_color }}!important;
-          border: none!important;
+          border: {{ settings.checkout_border_thickness }}px solid!important;
+          border-color: {{ settings.checkout_border_color }}!important;
       }
     </style>
   {% endif %}
@@ -60,7 +76,8 @@
       .{{ settings.addcart_preorder_button_class | replace: '.', '' }} {
           background-color: {{ settings.addcart_button_color }}!important;
           color: {{ settings.addcart_text_color }}!important;
-          border: none!important;
+          border: {{ settings.addcart_border_thickness }}px solid!important;
+          border-color: {{ settings.addcart_border_color }}!important;
       }
     </style>
   {% endif %}
@@ -71,6 +88,45 @@
   "name": "Pre Order Buttons",
   "target": "section",
   "settings": [
+    {
+      "type": "header",
+      "content": "Add to cart button"
+    },
+    {
+      "type": "text",
+      "id": "addcart_default_button_name",
+      "label": "Default Add to cart button name"
+    },
+    {
+      "type": "text",
+      "id": "addcart_preorder_button_name",
+      "label": "Add to cart button name for pre order"
+    },
+    {
+      "type": "text",
+      "id": "addcart_preorder_button_class",
+      "label": "Add to cart button's css class name"
+    },
+    {
+      "type": "color",
+      "id": "addcart_button_color",
+      "label": "Add to cart button colour",
+      "default": "#000000"
+    },
+    { "type": "color", "id": "addcart_text_color", "label": "Add to cart text colour", "default": "#FFFFFF" },
+    {
+      "type": "number",
+      "id": "addcart_border_thickness",
+      "label": "addcart button border thickness (px)",
+      "default": 1
+    },
+    {
+      "type": "color",
+      "id": "addcart_border_color",
+      "label": "Add to cart button border colour",
+      "default": "#000000"
+    },
+
     {
       "type": "header",
       "content": "Dynamic checkout button"
@@ -102,33 +158,18 @@
       "label": "Checkout button text colour",
       "default": "#000000"
     },
-
     {
-      "type": "header",
-      "content": "Add to cart button"
-    },
-    {
-      "type": "text",
-      "id": "addcart_default_button_name",
-      "label": "Default Add to cart button name"
-    },
-    {
-      "type": "text",
-      "id": "addcart_preorder_button_name",
-      "label": "Add to cart button name for pre order"
-    },
-    {
-      "type": "text",
-      "id": "addcart_preorder_button_class",
-      "label": "Add to cart button's css class name"
+      "type": "number",
+      "id": "checkout_border_thickness",
+      "label": "Checkout button border thickness (px)",
+      "default": 1
     },
     {
       "type": "color",
-      "id": "addcart_button_color",
-      "label": "Add to cart button colour",
+      "id": "checkout_border_color",
+      "label": "Checkout button border colour",
       "default": "#000000"
-    },
-    { "type": "color", "id": "addcart_text_color", "label": "Add to cart text colour", "default": "#FFFFFF" }
+    }
   ]
 }
 {% endschema %}
