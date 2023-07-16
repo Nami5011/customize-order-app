@@ -12,29 +12,29 @@
     assign message_instock = appSettings.msgInstock
     assign message_lowinventory = appSettings.msgLowInventory
   endif
-  assign icon_color = 'rgb(255, 255, 255)'
+  assign icon_color = '#FFFFFF'
 %}
 
 {% if inventory_quantity > 0 %}
   {% if appSettings.showLowInventoryFlg == true and appSettings.rangeLowInventory >= inventory_quantity %}
     <ul class="inventory_list_block__custom">
       <li class="inventory_list__custom">
-        {% if appSettings.lowInventoryIconType.first == 'icon' %}
-          {% assign icon_color = appSettings.rgbColorLowInventoryIcon %}
+        {% if appSettings.iconTypeLowInventory.first == 'icon' %}
+          {% assign icon_color = appSettings.hexIconLowInventory %}
           <span class="icon_inventory__custom"></span>
         {% endif %}
-        <span style="color: {{ appSettings.rgbMsgColorLowInventory }}">{{ message_lowinventory }}</span>
+        <span style="color: {{ appSettings.hexMsgLowInventory }}">{{ message_lowinventory }}</span>
       </li>
     </ul>
 
   {% elsif appSettings.showInstockFlg == true %}
     <ul class="inventory_list_block__custom">
       <li class="inventory_list__custom">
-        {% if appSettings.instockIconType.first == 'icon' %}
-          {% assign icon_color = appSettings.rgbColorInstockIcon %}
+        {% if appSettings.iconTypeInstock.first == 'icon' %}
+          {% assign icon_color = appSettings.hexIconInstock %}
           <span class="icon_inventory__custom"></span>
         {% endif %}
-        <span style="color: {{ appSettings.rgbMsgColorInstock }}">{{ message_instock }}</span>
+        <span style="color: {{ appSettings.hexMsgInstock }}">{{ message_instock }}</span>
       </li>
     </ul>
   {% endif %}
@@ -43,22 +43,22 @@
   {% if appSettings.showPreorderFlg == true and inventory_policy == 'continue' %}
     <ul class="inventory_list_block__custom">
       <li class="inventory_list__custom">
-        {% if appSettings.preorderIconType.first == 'icon' %}
-          {% assign icon_color = appSettings.rgbColorPreorderIcon %}
+        {% if appSettings.iconTypePreorder.first == 'icon' %}
+          {% assign icon_color = appSettings.hexIconPreorder %}
           <span class="icon_inventory__custom"></span>
         {% endif %}
-        <span style="color: {{ appSettings.rgbMsgColorPreorder }}">{{ appSettings.msgPreorder }}</span>
+        <span style="color: {{ appSettings.hexMsgPreorder }}">{{ appSettings.msgPreorder }}</span>
       </li>
     </ul>
 
   {% elsif appSettings.showOutOfStockFlg == true and inventory_management == 'shopify' %}
     <ul class="inventory_list_block__custom">
       <li class="inventory_list__custom">
-        {% if appSettings.outOfStockIconType.first == 'icon' %}
-          {% assign icon_color = appSettings.rgbColorOutOfStockIcon %}
+        {% if appSettings.iconTypeOutOfStock.first == 'icon' %}
+          {% assign icon_color = appSettings.hexIconOutOfStock %}
           <span class="icon_inventory__custom"></span>
         {% endif %}
-        <span style="color: {{ appSettings.rgbMsgColorOutOfStock }}">{{ appSettings.msgOutOfStock }}</span>
+        <span style="color: {{ appSettings.hexMsgOutOfStock }}">{{ appSettings.msgOutOfStock }}</span>
       </li>
     </ul>
   {% endif %}
