@@ -1,0 +1,103 @@
+{% liquid
+  assign variant = product.selected_or_first_available_variant
+  assign inventory_quantity = variant.inventory_quantity
+  assign inventory_policy = variant.inventory_policy
+  assign inventory_management = variant.inventory_management
+
+  assign settings = block.settings
+%}
+
+{% if inventory_quantity <= 0 and inventory_management == 'shopify' and inventory_policy == 'continue' %}
+  <script>
+    {% assign num = block.id | replace: '-', '_' %}
+    const checkout_default_button_name{{ num }} = '{{ settings.checkout_default_button_name }}';
+    const checkout_preorder_button_name{{ num }} = '{{ settings.checkout_preorder_button_name }}';
+    const addcart_default_button_name{{ num }} = '{{ settings.addcart_default_button_name }}';
+    const addcart_preorder_button_name{{ num }} = '{{ settings.addcart_preorder_button_name }}';
+    const modifyContents{{ num }} = function () {
+      let elements = document.body.querySelectorAll('*');
+      let checkout_elements = [];
+      let addcart_elements = [];
+      if (checkout_default_button_name{{ num }} || addcart_default_button_name{{ num }}) {
+        elements.forEach(function (elm) {
+          if (
+            elm.innerHTML &&
+            checkout_default_button_name{{ num }} &&
+            elm.innerHTML.trim().toLowerCase() == checkout_default_button_name{{ num }}.trim().toLowerCase()
+          ) {
+            checkout_elements.push(elm);
+          }
+          if (
+            elm.innerHTML &&
+            addcart_default_button_name{{ num }} &&
+            elm.innerHTML.trim().toLowerCase() == addcart_default_button_name{{ num }}.trim().toLowerCase()
+          ) {
+            addcart_elements.push(elm);
+          }
+        });
+      }
+      // console.log('checkout element', checkout_elements);
+      // console.log('addcart element', addcart_elements);
+      if (checkout_elements.length > 0) {
+        checkout_elements.forEach(function (elm) {
+          elm.innerHTML = checkout_preorder_button_name{{ num }};
+        });
+      }
+      if (addcart_elements.length > 0) {
+        addcart_elements.forEach(function (elm) {
+          elm.innerHTML = addcart_preorder_button_name{{ num }};
+        });
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', function () {
+      modifyContents{{ num }}();
+      // setTimeout(modifyContents);
+      setInterval(modifyContents{{ num }}, 100);
+    });
+    // document.addEventListener('readystatechange', (event) => {
+    // });
+    window.addEventListener('load', function () {
+      modifyContents{{ num }}();
+      clearInterval(modifyContents{{ num }});
+    });
+  </script>
+{% endif %}
+
+{% schema %}
+{
+  "name": "Pre Order Button Text",
+  "target": "section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Add to cart button"
+    },
+    {
+      "type": "text",
+      "id": "addcart_default_button_name",
+      "label": "Default Add to cart button name"
+    },
+    {
+      "type": "text",
+      "id": "addcart_preorder_button_name",
+      "label": "Add to cart button name for pre order"
+    },
+
+    {
+      "type": "header",
+      "content": "Dynamic checkout button"
+    },
+    {
+      "type": "text",
+      "id": "checkout_default_button_name",
+      "label": "Checkout button name"
+    },
+    {
+      "type": "text",
+      "id": "checkout_preorder_button_name",
+      "label": "Checkout button name for pre order"
+    }
+  ]
+}
+{% endschema %}
