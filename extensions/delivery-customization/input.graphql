@@ -1,0 +1,27 @@
+query Input {
+	cart {
+		deliveryGroups {
+			deliveryAddress {
+				provinceCode
+			}
+			deliveryOptions {
+				handle
+				title
+			}
+			cartLines {
+				id
+				quantity
+				merchandise {
+					... on ProductVariant {
+						id
+					}
+				}
+			}
+		}
+	}
+	deliveryCustomization {
+		metafield(namespace: "$app:delivery-customization", key: "function-configuration") {
+		value
+		}
+	}
+}

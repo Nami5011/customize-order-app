@@ -4,6 +4,10 @@ export const apiPath = {
 	metafields: '/api/metafields',
 	metafieldStorefrontVisibilities: '/api/metafieldStorefrontVisibilities',
 	metafieldStorefrontVisibilityCreate: '/api/metafieldStorefrontVisibility/create',
+	storefrontAccessTokenCreate: '/api/storefrontAccessTokenCreate',
+	webhookCartsUptateCreate: '/api/webhookCartsUptateCreate',
+	webhookCartsUptateDelete: '/api/webhookCartsUptateDelete',
+	getWebhooks: '/api/getWebhooks'
 }
 
 export const apiParam = {
