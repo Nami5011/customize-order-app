@@ -22,3 +22,5 @@ export const apiParam = {
 export const ownerType = {
 	shop: 'SHOP',
 }
+
+export const storefrontTitle ='preorder-dB3v2jY9Itp3';

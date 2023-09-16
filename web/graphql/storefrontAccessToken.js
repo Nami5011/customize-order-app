@@ -15,13 +15,11 @@ const STOREFRONT_ACCESS_TOKEN_CREATE = `
 			storefrontAccessToken {
 				id
 				accessToken
+				title
 				accessScopes {
 					description
 					handle
 				}
-				title
-				createdAt
-				updatedAt
 			}
 			userErrors {
 				field

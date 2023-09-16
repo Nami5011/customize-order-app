@@ -9,7 +9,10 @@ import {
 	useParams,
 } from "react-router-dom";
 import { Toast } from "@shopify/app-bridge-react";
-
+// import { Buffer } from 'buffer';
+import axios from "axios";
+import { storefrontTitle } from "../../../../common-variable.js";
+import { getSessionToken } from "@shopify/app-bridge/utilities";
 // to do 
 // delete
 
@@ -22,7 +25,10 @@ export default function DeliveryCustomization() {
 	const [stateProvinceCode, setStateProvinceCode] = useState('');
 	const [message, setMessage] = useState('');
 	const [domain, setDmain] = useState('');
+	const [storefront, setStorefront] = useState('');
+	const [storefrontId, setStorefrontId] = useState('');
 	const [isLoading, setIsLoading] = useState(true);
+	const [isLoadingBtn, setIsLoadingBtn] = useState(true);
 	// toast prop
 	const emptyToastProps = { content: null };
 	const [toastProps, setToastProps] = useState(emptyToastProps);
@@ -40,23 +46,55 @@ export default function DeliveryCustomization() {
 				setStateProvinceCode(metafieldValue.stateProvinceCode);
 				setMessage(metafieldValue.message);
 			}
-			const domainResponse = await fetch("/api/shop/primaryDomain");
-			console.log(primaryDomain);
-			const primaryDomain = await domainResponse.json();
-			console.log('shop domain', primaryDomain?.url);
-			setDmain(primaryDomain?.url);
 		} catch (e) {
 			console.error(e);
 		}
 		setIsLoading(false);
 	};
 
+	const getToken = async () => {
+		try {
+			// const domainResponse = await fetch("/api/shop/primaryDomain");
+			// const primaryDomain = await domainResponse.json();
+			// console.log('shop domain', primaryDomain);
+			// setDmain(primaryDomain?.url);
+			// const storefrontAccessTokenResponse = await fetch("/api/shop/storefrontAccessTokens");
+			const storefrontAccessTokenResponse = await fetch("/api/shop/storefrontAccessTokens?type=create&title=" + storefrontTitle);
+			console.log("/api/shop/storefrontAccessTokens response", storefrontAccessTokenResponse);
+			const shop = await storefrontAccessTokenResponse.json();
+			console.log("shop", shop);
+			const token = shop?.storefrontAccessTokens ? shop?.storefrontAccessTokens[0] : {};
+			if (token.length === 0) {
+				throw 'Unable to get/create storefront access token.';
+			}
+			console.log('accessToken', token.accessToken);
+			console.log('accessToken id', token.id);
+			console.log('primaryDomain', shop?.primaryDomain?.url);
+			setStorefront(token.accessToken);
+			// setStorefrontId(token.id);
+			setDmain(shop?.primaryDomain?.url);
+
+			setStorefrontId('gid://shopify/StorefrontAccessToken/81817567540');
+
+			// encrtpt to base64
+			// let encryptedToken = Buffer.from(token.accessToken).toString('base64');
+			// let decodedToken = Buffer.from(encryptedToken, 'base64').toString();
+			// console.log('encryptedToken', encryptedToken)
+			// console.log('decodedToken', decodedToken)
+		} catch (e) {
+			console.error(e);
+		}
+		setIsLoadingBtn(false);
+	};
+
 	useEffect(() => {
 		loader();
+		getToken();
 	}, []);
 
 	const action = async () => {
 		setIsLoading(true);
+		setIsLoadingBtn(true);
 		const deliveryCustomizationInput = {
 			functionId: functionId,
 			title: `Change ${stateProvinceCode} delivery message`,
@@ -70,6 +108,7 @@ export default function DeliveryCustomization() {
 						stateProvinceCode: stateProvinceCode,
 						message: message,
 						domain: domain,
+						storefront: storefront,
 					},
 				},
 			],
@@ -78,6 +117,7 @@ export default function DeliveryCustomization() {
 			id: id,
 			deliveryCustomization: deliveryCustomizationInput,
 		}
+		console.log('deliveryCustomizationInput', deliveryCustomizationInput);
 		try {
 			if (id != "new") {
 				// update
@@ -133,6 +173,7 @@ export default function DeliveryCustomization() {
 			console.log(e);
 		}
 		setIsLoading(false);
+		setIsLoadingBtn(false);
 	};
 	const deleteDeliveryCustom = async () => {
 		if (!window.confirm('Are you sure you wanna delete?\nThis action can not be undone.')) {
@@ -160,9 +201,19 @@ export default function DeliveryCustomization() {
 			setIsLoading(false);
 		}
 	};
-
 	const goback = () => {
 		window.history.back();
+	};
+	const deleteToken = async () => {
+		try {
+			const id = storefrontId.substring(storefrontId.lastIndexOf('/') + 1);
+			const storefrontAccessDeleteResponse = await fetch("/api/storefrontAccessTokenDelete?id=" + id);
+			const storefrontAccessDelete = await storefrontAccessDeleteResponse.json();
+			console.log('deleted token', storefrontAccessDelete);
+		} catch (e) {
+			console.error('failed delete', e);
+		}
+
 	};
 	// const prevPage = document.referrer;
 	// const backBtnTxt = prevPage.match(/\/settings\/shipping\/customizations/g) !== null ? 'Delivery customizations' : 'Back';
@@ -177,7 +228,7 @@ export default function DeliveryCustomization() {
 				}}
 				primaryAction={{
 					content: "Save",
-					loading: isLoading,
+					loading: isLoading && isLoadingBtn,
 					onAction: action,
 				}}
 				secondaryActions={[
@@ -210,6 +261,7 @@ export default function DeliveryCustomization() {
 						requiredIndicator
 						autoComplete="off"
 					/>
+					<button onClick={deleteToken}>delete storefront access token</button>
 				</AlphaCard>
 			</Page>
 		</>

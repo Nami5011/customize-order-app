@@ -172,6 +172,19 @@ app.post(apiPath.webhookCartsUptateCreate, async (_req, res) => {
 		res.status(500).send(e);
 	}
 });
+
+// app.post('/api/webhookOrdersCreate', async (_req, res) => {
+// 	try {
+// 		const data = await webhookOrdersCreate(
+// 			res.locals.shopify.session,
+// 			);
+// 		res.status(200).send(data);
+// 	} catch (e) {
+// 		console.log(`Failed to process /api/webhookOrdersCreate: ${e.message}`);
+// 		res.status(500).send(e);
+// 	}
+// });
+
 app.get(apiPath.getWebhooks, async (_req, res) => {
 	try {
 		const data = await getWebhooks(
@@ -238,6 +251,7 @@ app.post("/api/deliveryCustomizationCreate", async (req, res) => {
 									stateProvinceCode: metafield.value.stateProvinceCode,
 									message: metafield.value.message,
 									domain: metafield.value.domain,////////////////////
+									storefront: metafield.value.storefront,
 								}),
 							}
 						],
@@ -245,6 +259,7 @@ app.post("/api/deliveryCustomizationCreate", async (req, res) => {
 				}
 			},
 		});
+		
 		let updateResult = response.body.data.deliveryCustomizationCreate;
 		if (handleUserError(updateResult.userErrors, res)) {
 			return;
@@ -296,6 +311,7 @@ app.post("/api/deliveryCustomizationUpdate", async (req, res) => {
 									stateProvinceCode: metafield.value.stateProvinceCode,
 									message: metafield.value.message,
 									domain: metafield.value.domain,
+									storefront: metafield.value.storefront,
 								}),
 							}
 						],
@@ -455,6 +471,100 @@ app.get("/api/shop/primaryDomain", async (req, res) => {
 
 });
 
+// get storefrontAccessTokens
+app.get("/api/shop/storefrontAccessTokens", async (req, res) => {
+	const graphqlClient = new shopify.api.clients.Graphql({
+		session: res.locals.shopify.session
+	});
+	const { type, title } = req.query;
+	let result = {};
+	let storefrontAccessTokens = [];
+	try {
+		// Create the delivery customization for the provided function ID
+		const response = await graphqlClient.query({
+			data: {
+				query: `{
+					shop {
+						primaryDomain {
+							url
+						}
+						storefrontAccessTokens(first: 5) {
+							nodes {
+								id
+								accessToken
+								title
+								accessScopes {
+									description
+									handle
+								}
+							}
+						}
+					}
+				}`,
+			},
+		});
+		result = response.body.data.shop;
+		storefrontAccessTokens = result?.storefrontAccessTokens?.nodes;
+		storefrontAccessTokens = storefrontAccessTokens ? storefrontAccessTokens : [];
+		if (title && storefrontAccessTokens.length > 0) {
+			storefrontAccessTokens = storefrontAccessTokens.filter((storefront) => storefront?.title === title);
+		}
+		if (title && type == 'create' && storefrontAccessTokens.length === 0) {
+			const newToken = await storefrontAccessTokenCreate(
+				res.locals.shopify.session,
+				title,
+			);
+			storefrontAccessTokens = [newToken?.body?.data?.storefrontAccessTokenCreate?.storefrontAccessToken];
+		}
+		result.storefrontAccessTokens = storefrontAccessTokens;
+	} catch (error) {
+		// Handle errors thrown by the graphql client
+		if (!(error instanceof GraphqlQueryError)) {
+		throw error;
+		}
+		return res.status(500).send({ error: error.response });
+	}
+	return res.status(200).send(result);
+});
+// delete storefrontAccessTokens
+app.get("/api/storefrontAccessTokenDelete", async (req, res) => {
+	const graphqlClient = new shopify.api.clients.Graphql({
+		session: res.locals.shopify.session
+	});
+	const { id } = req.query;
+	let result = {};
+	try {
+		// Create the delivery customization for the provided function ID
+		const response = await graphqlClient.query({
+			data: {
+				query: `
+					mutation storefrontAccessTokenDelete($input: StorefrontAccessTokenDeleteInput!) {
+						storefrontAccessTokenDelete(input: $input) {
+							deletedStorefrontAccessTokenId
+							userErrors {
+								field
+								message
+							}
+						}
+					}
+				`,
+				variables: {
+					input: {
+						id: `gid://shopify/StorefrontAccessToken/${id}`,
+					}
+				},
+			},
+		});
+		result = response.body.data.storefrontAccessTokenDelete;
+	} catch (error) {
+		// Handle errors thrown by the graphql client
+		if (!(error instanceof GraphqlQueryError)) {
+		throw error;
+		}
+		return res.status(500).send({ error: error.response });
+	}
+	return res.status(200).send(result);
+});
 app.use(shopify.cspHeaders());
 app.use(serveStatic(STATIC_PATH, { index: false }));
 
