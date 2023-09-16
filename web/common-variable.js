@@ -9,7 +9,9 @@ export const apiPath = {
 	webhookCartsUptateDelete: '/api/webhookCartsUptateDelete',
 	getWebhooks: '/api/getWebhooks'
 }
-
+export const apiPathLambda = {
+	saveStoreFront: 'https://ke5ie7fajk.execute-api.ap-northeast-1.amazonaws.com/saveStoreFrontDev',
+}
 export const apiParam = {
 	metafields: {
 		// namespace: 'test_namespace',
@@ -24,3 +26,4 @@ export const ownerType = {
 }
 
 export const storefrontTitle ='preorder-dB3v2jY9Itp3';
+export const appNameForLambda ='pre-order';

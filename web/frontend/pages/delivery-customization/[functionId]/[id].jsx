@@ -11,7 +11,7 @@ import {
 import { Toast } from "@shopify/app-bridge-react";
 // import { Buffer } from 'buffer';
 import axios from "axios";
-import { storefrontTitle } from "../../../../common-variable.js";
+import { apiPathLambda, storefrontTitle, appNameForLambda } from "../../../../common-variable.js";
 import { getSessionToken } from "@shopify/app-bridge/utilities";
 // to do 
 // delete
@@ -20,7 +20,7 @@ export default function DeliveryCustomization() {
 	const fetch = useAuthenticatedFetch();
 	const params = useParams();
 	const { functionId, id } = params;
-	console.log(params)
+	// console.log(params)
 	// inputs
 	const [stateProvinceCode, setStateProvinceCode] = useState('');
 	const [message, setMessage] = useState('');
@@ -41,7 +41,7 @@ export default function DeliveryCustomization() {
 			if (id != "new") {
 				const deliveryCustomizationResponse = await fetch("/api/deliveryCustomization?gid=" + id);
 				const deliveryCustomization = await deliveryCustomizationResponse.json();
-				console.log('exist deliveryCustomization', deliveryCustomization);
+				// console.log('exist deliveryCustomization', deliveryCustomization);
 				const metafieldValue = JSON.parse(deliveryCustomization.metafield.value);
 				setStateProvinceCode(metafieldValue.stateProvinceCode);
 				setMessage(metafieldValue.message);
@@ -60,22 +60,34 @@ export default function DeliveryCustomization() {
 			// setDmain(primaryDomain?.url);
 			// const storefrontAccessTokenResponse = await fetch("/api/shop/storefrontAccessTokens");
 			const storefrontAccessTokenResponse = await fetch("/api/shop/storefrontAccessTokens?type=create&title=" + storefrontTitle);
-			console.log("/api/shop/storefrontAccessTokens response", storefrontAccessTokenResponse);
+			// console.log("/api/shop/storefrontAccessTokens response", storefrontAccessTokenResponse);
 			const shop = await storefrontAccessTokenResponse.json();
-			console.log("shop", shop);
+			// console.log("shop", shop);
 			const token = shop?.storefrontAccessTokens ? shop?.storefrontAccessTokens[0] : {};
 			if (token.length === 0) {
 				throw 'Unable to get/create storefront access token.';
 			}
-			console.log('accessToken', token.accessToken);
-			console.log('accessToken id', token.id);
-			console.log('primaryDomain', shop?.primaryDomain?.url);
+			// console.log('accessToken', token.accessToken);
+			// console.log('accessToken id', token.id);
+			// console.log('primaryDomain', shop?.primaryDomain?.url);
 			setStorefront(token.accessToken);
-			// setStorefrontId(token.id);
+			setStorefrontId(token.id);
 			setDmain(shop?.primaryDomain?.url);
 
-			setStorefrontId('gid://shopify/StorefrontAccessToken/81817567540');
-
+			const reqestBody = {};
+			reqestBody.app_name = appNameForLambda;
+			reqestBody.shopify_domain = shop?.primaryDomain?.url;
+			reqestBody.storefront_key_id = token.id;
+			reqestBody.storefront_key = token.accessToken;
+			try {
+				let res = await axios.post(apiPathLambda.saveStoreFront, reqestBody);
+				if (res?.data?.statusCode !== 200) {
+					throw res?.data;
+				}
+				// console.log('response: ', res);
+			} catch (error) {
+				console.error('failed: ', error);
+			}
 			// encrtpt to base64
 			// let encryptedToken = Buffer.from(token.accessToken).toString('base64');
 			// let decodedToken = Buffer.from(encryptedToken, 'base64').toString();
