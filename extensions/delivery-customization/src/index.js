@@ -12,6 +12,7 @@
 const NO_CHANGES = {
 	operations: [],
 };
+// import { Buffer } from 'buffer';
 
 export default /**
 * @param {InputQuery} input
@@ -22,39 +23,49 @@ export default /**
 	/**
 	 * @type {{
 	 *  stateProvinceCode: string
-	 *  message: number
+	 *  message: string
+	 *  domain: string
+	 *  storefront: string
+	 *  customDeliveryOptions: Array
 	 * }}
 	 */
-
 	// metafield
 	const configuration = JSON.parse(
 		input?.deliveryCustomization?.metafield?.value ?? "{}"
 	);
-	if (!configuration.stateProvinceCode || !configuration.message) {
+	if (!configuration.customDeliveryOptions || (configuration.customDeliveryOptions && configuration.customDeliveryOptions.length === 0)) {
 		return NO_CHANGES;
 	}
+	const customDeliveryOptions = configuration.customDeliveryOptions;
+	var preOrders = input.cart.lines.filter((line) => Number(line.attribute?.value) > 0);
+	var preOrderFlg = preOrders && preOrders.length > 0 ? true : false;
 
-	const cartline = input?.cart?.deliveryGroups[0]?.cartLines;
-	console.log('CARTLINE', cartline);
-
-	let toRename = input.cart.deliveryGroups
-	.filter(group => group.deliveryAddress?.provinceCode &&
-		// Use the configured province code instead of a hardcoded value
-		group.deliveryAddress.provinceCode == "NC")
-		// group.deliveryAddress.provinceCode == configuration.stateProvinceCode)
+	let hideOperations = input.cart.deliveryGroups
 	.flatMap(group => group.deliveryOptions)
+	.filter(option => {
+		let conditions = customDeliveryOptions.filter(customOption => customOption.name == option.code);
+		if (conditions && conditions.length > 0) {
+			let condition = conditions[0]?.condition;
+			if (condition == 'INSTOCK_ONLY' && preOrderFlg) {
+				return true; // hide the option
+			} else if (condition == 'PREORDER' && !preOrderFlg) {
+				return true; // hide the option
+			}
+			return false;
+		}
+	})
 	.map(option => /** @type {Operation} */({
-		rename: {
+		hide: {
 			deliveryOptionHandle: option.handle,
-			// Use the configured message instead of a hardcoded value
-			title: option.title ? `${option.title} - custom message` : 'custom message'
-			//   title: option.title ? `${option.title} - ${configuration.message}` : configuration.message
 		}
 	}));
-
-	return {
-		operations: toRename
-	};
+	
+	if (hideOperations && hideOperations.length > 0) {
+		return {
+			operations: hideOperations
+		};
+	}
 	return NO_CHANGES;
+
 };
   

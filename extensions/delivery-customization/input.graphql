@@ -1,26 +1,33 @@
 query Input {
 	cart {
-		deliveryGroups {
-			deliveryAddress {
-				provinceCode
+		lines {
+			attribute (key: "Preorder") {
+				key
+				value
 			}
+		}
+		deliveryGroups {
+			# deliveryAddress {
+			# 	provinceCode
+			# }
 			deliveryOptions {
 				handle
 				title
+				code
 			}
-			cartLines {
-				id
-				quantity
-				merchandise {
-					... on ProductVariant {
-						id
-						title
-						product {
-							id
-						}
-					}
-				}
-			}
+			# cartLines {
+			# 	id
+			# 	quantity
+			# 	merchandise {
+			# 		... on ProductVariant {
+			# 			id
+			# 			title
+			# 			product {
+			# 				id
+			# 			}
+			# 		}
+			# 	}
+			# }
 		}
 	}
 	deliveryCustomization {

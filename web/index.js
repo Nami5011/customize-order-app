@@ -12,6 +12,7 @@ import { apiPath } from "./common-variable.js";
 import { metafieldStorefrontVisibilities, metafieldStorefrontVisibilityCreate } from "./graphql/metafieldStorefrontVisibilities.js";
 import { storefrontAccessTokenCreate } from "./graphql/storefrontAccessToken.js";
 import { getWebhooks, webhookCartsUptateCreate, webhookCartsUptateDelete } from "./graphql/webhookSubscription.js";
+import * as deliveryProfile from './graphql/deliveryProfile.js';
 import { GraphqlQueryError, DataType } from '@shopify/shopify-api';
 const PORT = parseInt(
   process.env.BACKEND_PORT || process.env.PORT || "3000",
@@ -42,6 +43,34 @@ app.post(
 app.use("/api/*", shopify.validateAuthenticatedSession());
 
 app.use(express.json());
+
+app.post('/api/deliveryProfile', async (req, res) => {
+	const graphqlClient = new shopify.api.clients.Graphql({
+		session: res.locals.shopify.session
+	});
+	try {
+		// Get data here
+		const queryData = deliveryProfile.getQueryData(req);
+		const response = await graphqlClient.query({
+			data: queryData,
+		});
+	console.log('response', response)
+	// Get response data here
+		let result = deliveryProfile.getResData(req, response);
+		// if (handleUserError(result?.userErrors, res)) {
+		// 	return;
+		// }
+		return res.status(200).send(result);
+	} catch (error) {
+	console.error('response error', error)
+
+		// Handle errors thrown by the graphql client
+		if (!(error instanceof GraphqlQueryError)) {
+			throw res.status(500).send('GraphqlQueryError');
+		}
+		return res.status(500).send({ error: error.response });
+	}
+});
 
 app.get("/api/products/count", async (_req, res) => {
   const countData = await shopify.api.rest.Product.count({
@@ -161,6 +190,18 @@ app.post(apiPath.storefrontAccessTokenCreate, async (_req, res) => {
 	}
 });
 
+app.post('/api/webhookProductsUptateCreate', async (_req, res) => {
+	try {
+		const data = await webhookCartsUptateCreate(
+			res.locals.shopify.session,
+			);
+		res.status(200).send(data);
+	} catch (e) {
+		console.log(`Failed to process ${apiPath.webhookCartsUptateCreate}: ${e.message}`);
+		res.status(500).send(e);
+	}
+});
+
 app.post(apiPath.webhookCartsUptateCreate, async (_req, res) => {
 	try {
 		const data = await webhookCartsUptateCreate(
@@ -252,6 +293,7 @@ app.post("/api/deliveryCustomizationCreate", async (req, res) => {
 									message: metafield.value.message,
 									domain: metafield.value.domain,////////////////////
 									storefront: metafield.value.storefront,
+									customDeliveryOptions: metafield.value.customDeliveryOptions,
 								}),
 							}
 						],
@@ -312,6 +354,7 @@ app.post("/api/deliveryCustomizationUpdate", async (req, res) => {
 									message: metafield.value.message,
 									domain: metafield.value.domain,
 									storefront: metafield.value.storefront,
+									customDeliveryOptions: metafield.value.customDeliveryOptions,
 								}),
 							}
 						],
