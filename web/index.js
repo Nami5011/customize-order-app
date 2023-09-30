@@ -11,7 +11,7 @@ import { DeliveryMethod } from "@shopify/shopify-api";
 import { apiPath } from "./common-variable.js";
 import { metafieldStorefrontVisibilities, metafieldStorefrontVisibilityCreate } from "./graphql/metafieldStorefrontVisibilities.js";
 import { storefrontAccessTokenCreate } from "./graphql/storefrontAccessToken.js";
-import { getWebhooks, webhookCartsUptateCreate, webhookCartsUptateDelete } from "./graphql/webhookSubscription.js";
+import * as webhook from "./graphql/webhookSubscription.js";
 import * as deliveryProfile from './graphql/deliveryProfile.js';
 import { GraphqlQueryError, DataType } from '@shopify/shopify-api';
 const PORT = parseInt(
@@ -54,8 +54,7 @@ app.post('/api/deliveryProfile', async (req, res) => {
 		const response = await graphqlClient.query({
 			data: queryData,
 		});
-	console.log('response', response)
-	// Get response data here
+		// Get response data here
 		let result = deliveryProfile.getResData(req, response);
 		// if (handleUserError(result?.userErrors, res)) {
 		// 	return;
@@ -64,6 +63,30 @@ app.post('/api/deliveryProfile', async (req, res) => {
 	} catch (error) {
 	console.error('response error', error)
 
+		// Handle errors thrown by the graphql client
+		if (!(error instanceof GraphqlQueryError)) {
+			throw res.status(500).send('GraphqlQueryError');
+		}
+		return res.status(500).send({ error: error.response });
+	}
+});
+
+// webhook subscription query/mutation
+app.post('/api/webhookSubscription', async (req, res) => {
+	const graphqlClient = new shopify.api.clients.Graphql({
+		session: res.locals.shopify.session
+	});
+	try {
+		// Get data here
+		const queryData = webhook.getQueryData(req);
+		const response = await graphqlClient.query({
+			data: queryData,
+		});
+		// Get response data here
+		let result = webhook.getResData(req, response);
+		return res.status(200).send(result);
+	} catch (error) {
+	console.error('response error', error)
 		// Handle errors thrown by the graphql client
 		if (!(error instanceof GraphqlQueryError)) {
 			throw res.status(500).send('GraphqlQueryError');
@@ -190,64 +213,6 @@ app.post(apiPath.storefrontAccessTokenCreate, async (_req, res) => {
 	}
 });
 
-app.post('/api/webhookProductsUptateCreate', async (_req, res) => {
-	try {
-		const data = await webhookCartsUptateCreate(
-			res.locals.shopify.session,
-			);
-		res.status(200).send(data);
-	} catch (e) {
-		console.log(`Failed to process ${apiPath.webhookCartsUptateCreate}: ${e.message}`);
-		res.status(500).send(e);
-	}
-});
-
-app.post(apiPath.webhookCartsUptateCreate, async (_req, res) => {
-	try {
-		const data = await webhookCartsUptateCreate(
-			res.locals.shopify.session,
-			);
-		res.status(200).send(data);
-	} catch (e) {
-		console.log(`Failed to process ${apiPath.webhookCartsUptateCreate}: ${e.message}`);
-		res.status(500).send(e);
-	}
-});
-
-// app.post('/api/webhookOrdersCreate', async (_req, res) => {
-// 	try {
-// 		const data = await webhookOrdersCreate(
-// 			res.locals.shopify.session,
-// 			);
-// 		res.status(200).send(data);
-// 	} catch (e) {
-// 		console.log(`Failed to process /api/webhookOrdersCreate: ${e.message}`);
-// 		res.status(500).send(e);
-// 	}
-// });
-
-app.get(apiPath.getWebhooks, async (_req, res) => {
-	try {
-		const data = await getWebhooks(
-			res.locals.shopify.session,
-			);
-		res.status(200).send(data);
-	} catch (e) {
-		console.log(`Failed to process ${apiPath.getWebhooks}: ${e.message}`);
-		res.status(500).send(e);
-	}
-});
-app.post(apiPath.webhookCartsUptateDelete, async (_req, res) => {
-	try {
-		const data = await webhookCartsUptateDelete(
-			res.locals.shopify.session,
-			);
-		res.status(200).send(data);
-	} catch (e) {
-		console.log(`Failed to process ${apiPath.webhookCartsUptateDelete}: ${e.message}`);
-		res.status(500).send(e);
-	}
-});
 function handleUserError(userErrors, res) {
 	if (userErrors && userErrors.length > 0) {
 		const message = userErrors.map((error) => error.message).join(' ');
