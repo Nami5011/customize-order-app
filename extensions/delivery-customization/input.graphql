@@ -1,7 +1,7 @@
 query Input {
 	cart {
 		lines {
-			attribute (key: "Preorder") {
+			attribute (key: "Pre-order") {
 				key
 				value
 			}

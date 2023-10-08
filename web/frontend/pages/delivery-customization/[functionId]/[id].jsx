@@ -16,8 +16,8 @@ import {
 import { Toast } from "@shopify/app-bridge-react";
 // import { Buffer } from 'buffer';
 import axios from "axios";
-import { apiPathLambda, storefrontTitle, appNameForLambda } from "../../../../common-variable.js";
-import { getSessionToken } from "@shopify/app-bridge/utilities";
+import * as common from '../../../../common-variable.js';
+// import { getSessionToken } from "@shopify/app-bridge/utilities";
 
 const ALWAYS = 'ALWAYS';
 const INSTOCK_ONLY = 'INSTOCK_ONLY';
@@ -41,22 +41,7 @@ export default function DeliveryCustomization() {
 	const [storefrontId, setStorefrontId] = useState('');
 	const [resourceListKey, setResourceListKey] = useState(Date.now());
 	// Delivery options form delivery profile API
-	const [deliveryOptions, setDeliveryOptions] = useState([{
-		id: "gid://shopify/DeliveryMethodDefinition/660421247284",
-		name: "通常配送"
-	},
-	{
-		id: "gid://shopify/DeliveryMethodDefinition/718962000180",
-		name: "rapid shipping"
-	},
-	{
-		id: "gid://shopify/DeliveryMethodDefinition/749069631796",
-		name: "Standard"
-	},
-	{
-		id: "gid://shopify/DeliveryMethodDefinition/749607584052",
-		name: "custom"
-	}]);
+	const [deliveryOptions, setDeliveryOptions] = useState([]);
 	// Custom delivery options from delivery customization API
 	const [customDeliveryOptions, setCustomDeliveryOptions] = useState([]);
 	// choice select
@@ -74,6 +59,7 @@ export default function DeliveryCustomization() {
 	const toastMarkup = toastProps.content && (
 		<Toast {...toastProps} onDismiss={() => setToastProps(emptyToastProps)} />
 	);
+	var shopify_domain = '';
 
 	const loader = async () => {
 		// Get exist delivery customization
@@ -96,76 +82,56 @@ export default function DeliveryCustomization() {
 		}
 		// Get delivery profiles
 		// https://shopify.dev/docs/apps/selling-strategies/purchase-options/deferred/shipping-delivery/delivery-profiles#step-4-optional-remove-a-delivery-profile
-		// let deliveryProfiles;
-		// try {
-		// 	const deliveryProfilesResponse = await fetch('/api/deliveryProfile', {
-		// 		method: 'POST',
-		// 		headers: {
-		// 			'Content-Type': 'application/json',
-		// 		},
-		// 		body: JSON.stringify({
-		// 			queryName: 'deliveryProfiles',
-		// 		}),
-		// 	});
-		// 	console.log('deliveryProfilesResponse', deliveryProfilesResponse);
-		// 	deliveryProfiles = await deliveryProfilesResponse.json();
-		// 	console.log('deliveryProfiles', deliveryProfiles);
-		// } catch (e) {
-		// 	console.error(e);
-		// }
-		// let defaultProfileId;
-		// if (deliveryProfiles && deliveryProfiles.length > 0) {
-		// 	deliveryProfiles = deliveryProfiles.filter(profile => profile.default === true);
-		// }
-		// if (deliveryProfiles && deliveryProfiles.length > 0) {
-		// 	defaultProfileId = deliveryProfiles[0].id;
-		// }
-		// console.log('defaultProfileId', defaultProfileId);
+		let deliveryProfiles;
+		try {
+			const deliveryProfilesResponse = await fetch('/api/deliveryProfile', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					queryName: 'deliveryProfiles',
+				}),
+			});
+			// console.log('deliveryProfilesResponse', deliveryProfilesResponse);
+			deliveryProfiles = await deliveryProfilesResponse.json();
+			// console.log('deliveryProfiles', deliveryProfiles);
+		} catch (e) {
+			console.error(e);
+		}
+		let defaultProfileId;
+		if (deliveryProfiles && deliveryProfiles.length > 0) {
+			deliveryProfiles = deliveryProfiles.filter(profile => profile.default === true);
+		}
+		if (deliveryProfiles && deliveryProfiles.length > 0) {
+			defaultProfileId = deliveryProfiles[0].id;
+		}
+		console.log('defaultProfileId', defaultProfileId);
 
-		// // Get delivery options
-		// let methodDefinitions;
-		// if (defaultProfileId) {
-		// 	try {
-		// 		const deliveryOptionsResponse = await fetch('/api/deliveryProfile', {
-		// 			method: 'POST',
-		// 			headers: {
-		// 				'Content-Type': 'application/json',
-		// 			},
-		// 			body: JSON.stringify({
-		// 				queryName: 'deliveryProfileById',
-		// 				id: defaultProfileId,
-		// 			}),
-		// 		});
-		// 		methodDefinitions = await deliveryOptionsResponse.json();
-		// 	} catch (e) {
-		// 		console.error(e);
-		// 	}
-		// }
-		// if (methodDefinitions && methodDefinitions.length > 0) {
-		// 	let updateMessage = '';
-		// 	methodDefinitions.forEach((option, index) => {
-		// 		let condition = ALWAYS;
-		// 		let target = customDeliveryOptions.filter(customOption => customOption.id === option.id);
-		// 		if (target && target.length > 0) {
-		// 			condition = target[0].condition ? target[0].condition : condition;
-		// 			if (option.name != target[0].name) {
-		// 				updateMessage = 'Shipping rates have been changed. Press Save button to update the customization.'
-		// 			}
-		// 		}
-		// 		methodDefinitions[index].condition = condition;
-		// 	});
-		// 	setUpdated(updateMessage);
-		// 	setDeliveryOptions(methodDefinitions);
-		// }
-
-		// DELETE LATER!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-		let methodDefinitions = deliveryOptions;
+		// Get delivery options
+		let methodDefinitions;
+		if (defaultProfileId) {
+			try {
+				const deliveryOptionsResponse = await fetch('/api/deliveryProfile', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({
+						queryName: 'deliveryProfileById',
+						id: defaultProfileId,
+					}),
+				});
+				methodDefinitions = await deliveryOptionsResponse.json();
+			} catch (e) {
+				console.error(e);
+			}
+		}
 		if (methodDefinitions && methodDefinitions.length > 0) {
 			let updateMessage = '';
 			methodDefinitions.forEach((option, index) => {
-				let condition = CHOICELIST[0].label;
+				let condition = ALWAYS;
 				let target = customOptions.filter(customOption => customOption.id == option.id);
-				console.log(target);
 				if (target && target.length > 0) {
 					condition = target[0].condition ? target[0].condition : condition;
 					if (option.name != target[0].name) {
@@ -174,69 +140,210 @@ export default function DeliveryCustomization() {
 				}
 				methodDefinitions[index].condition = condition;
 			});
-			console.log('methodDefinitions', methodDefinitions);
 			setUpdated(updateMessage);
 			setDeliveryOptions(methodDefinitions);
 		}
-		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 		setIsLoading(false);
 	};
 
 	const getToken = async () => {
+		// Get Storefront Access Token
 		try {
-			// const domainResponse = await fetch("/api/shop/primaryDomain");
-			// const primaryDomain = await domainResponse.json();
-			// console.log('shop domain', primaryDomain);
-			// setDmain(primaryDomain?.url);
-			// const storefrontAccessTokenResponse = await fetch("/api/shop/storefrontAccessTokens");
-			const storefrontAccessTokenResponse = await fetch("/api/shop/storefrontAccessTokens?type=create&title=" + storefrontTitle);
-			// console.log("/api/shop/storefrontAccessTokens response", storefrontAccessTokenResponse);
+			const storefrontAccessTokenResponse = await fetch("/api/shop/storefrontAccessTokens?type=create&title=" + common.storefrontTitle);
 			const shop = await storefrontAccessTokenResponse.json();
-			// console.log("shop", shop);
 			const token = shop?.storefrontAccessTokens ? shop?.storefrontAccessTokens[0] : {};
 			if (token.length === 0) {
 				throw 'Unable to get/create storefront access token.';
 			}
-			// console.log('accessToken', token.accessToken);
-			// console.log('accessToken id', token.id);
-			// console.log('primaryDomain', shop?.primaryDomain?.url);
 			setStorefront(token.accessToken);
 			setStorefrontId(token.id);
-			setDmain(shop?.primaryDomain?.url);
+			shopify_domain = shop?.primaryDomain?.url;
+			setDmain(shopify_domain);
 
-			// const reqestBody = {};
-			// reqestBody.app_name = appNameForLambda;
-			// reqestBody.shopify_domain = shop?.primaryDomain?.url;
-			// reqestBody.storefront_key_id = token.id;
-			// reqestBody.storefront_key = token.accessToken;
-			// // Call lambda api to save token
-			// try {
-			// 	let res = await axios.post(apiPathLambda.saveStoreFront, reqestBody);
-			// 	if (res?.data?.statusCode !== 200) {
-			// 		throw res?.data;
-			// 	}
-			// 	// console.log('response: ', res);
-			// } catch (error) {
-			// 	console.error('failed: ', error);
-			// }
+			const reqestBody = {};
+			reqestBody.app_name = common.appNameForLambda;
+			reqestBody.shopify_domain = shop?.primaryDomain?.url;
+			reqestBody.storefront_key_id = token.id;
+			reqestBody.storefront_key = token.accessToken;
+			// Call lambda api to save token
+			try {
+				let res = await axios.post(common.apiPathLambda.saveStoreFront, reqestBody);
+				if (res?.data?.statusCode !== 200) {
+					throw res?.data;
+				}
+				// console.log('response: ', res);
+			} catch (error) {
+				console.error('failed: ', error);
+			}
 
 			// encrtpt to base64
 			// let encryptedToken = Buffer.from(token.accessToken).toString('base64');
 			// let decodedToken = Buffer.from(encryptedToken, 'base64').toString();
-			// console.log('encryptedToken', encryptedToken)
-			// console.log('decodedToken', decodedToken)
 		} catch (e) {
 			console.error(e);
 		}
+	};
+	const savePreorderProducts = async () => {
+		// Get Storefront Access Token
+		let productVariantResponse = {};
+		let hasNextPage = true;
+		let isIncludeContinue = true;
+		let cursor = null;
+		let targetProducts = [];
+		let productVariants = [];
+		let requestProduts = [];
+		let reqestBody = {};
+		let res = {};
+
+		while (hasNextPage && isIncludeContinue) {
+			targetProducts = [];
+			try {
+				productVariantResponse = await fetch('/api/productVariant', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({
+						queryName: 'productVariantInventoryPolicy',
+						first: 5,
+						after: cursor ? cursor : null,
+					}),
+				});
+				productVariantResponse = await productVariantResponse.json();
+			} catch (e) {
+				console.error(e);
+			}
+			productVariants = productVariantResponse?.edges;
+			hasNextPage = productVariantResponse?.pageInfo?.hasNextPage;
+			// filter to preorder products
+			if (productVariants && productVariants.length > 0) {
+				targetProducts = productVariants.filter(variant => variant?.node?.inventoryPolicy == 'CONTINUE' && variant?.node?.inventoryManagement == 'SHOPIFY');
+			}
+			// check if Graphql result includes preorder products
+			isIncludeContinue = targetProducts.length > 0;
+			if (isIncludeContinue) {
+				requestProduts = [];
+				targetProducts.forEach(target => {
+					requestProduts.push({
+						variant_id: target?.node?.id,
+						product_id: target?.node?.product?.id,
+					});
+				});
+				// cursor for after argument
+				cursor = productVariants[productVariants.length - 1]?.cursor;
+				// Call lambda api to save token
+				try {
+					reqestBody = {};
+					reqestBody.shopify_domain = shopify_domain;
+					reqestBody.products = requestProduts;
+
+					res = await axios.post(common.apiPathLambda.savePreorderProductBulk, reqestBody);
+					if (res?.data?.statusCode !== 200) {
+						throw res?.data;
+					}
+					// console.log('response: ', res);
+				} catch (error) {
+					console.error('failed: ', error);
+				}
+			}
+		}
+	};
+	const init = async () => {
+		// Get Storefront Access Token
+		await getToken();
+		await savePreorderProducts();
 		setIsLoadingBtn(false);
 	};
-
 	useEffect(() => {
 		loader();
-		getToken();
+		init();
 	}, []);
 
+	const checkWebhooks = async () => {
+		// Create subscription in case there isn't registered ones
+		let webhooks = await getWebhookId();
+		let carts_create_id = searchWebhookId(webhooks, 'CARTS_CREATE', common.lambdaArn.CARTS_UPDATE);
+		let promiseArray = [];
+		if (!carts_create_id) {
+			// await webhookCreate('CARTS_CREATE', common.lambdaArn.CARTS_UPDATE);
+			promiseArray.push(webhookCreate('CARTS_CREATE', common.lambdaArn.CARTS_UPDATE));
+		}
+		let carts_update_id = searchWebhookId(webhooks, 'CARTS_UPDATE', common.lambdaArn.CARTS_UPDATE);
+		if (!carts_update_id) {
+			// await webhookCreate('CARTS_UPDATE', common.lambdaArn.CARTS_UPDATE);
+			promiseArray.push(webhookCreate('CARTS_UPDATE', common.lambdaArn.CARTS_UPDATE));
+		}
+		let products_create_id = searchWebhookId(webhooks, 'PRODUCTS_CREATE', common.lambdaArn.PRODUCTS_UPDATE);
+		if (!products_create_id) {
+			// await webhookCreate('PRODUCTS_CREATE', common.lambdaArn.PRODUCTS_UPDATE);
+			promiseArray.push(webhookCreate('PRODUCTS_CREATE', common.lambdaArn.PRODUCTS_UPDATE));
+		}
+		let products_update_id = searchWebhookId(webhooks, 'PRODUCTS_UPDATE', common.lambdaArn.PRODUCTS_UPDATE);
+		if (!products_update_id) {
+			// await webhookCreate('PRODUCTS_UPDATE', common.lambdaArn.PRODUCTS_UPDATE);
+			promiseArray.push(webhookCreate('PRODUCTS_UPDATE', common.lambdaArn.PRODUCTS_UPDATE));
+		}
+		if (promiseArray.length > 0) {
+			await Promise.allSettled(promiseArray);
+		}
+		return;
+	};
+	const getWebhookId = async () => {
+		var return_data = [];
+		try {
+			const response = await fetch('/api/webhookSubscription', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					queryName: 'webhookSubscriptions',
+				}),
+			});
+			return_data = await response.json();
+		} catch (e) {
+			console.error('Failed get webhooks', e);
+		}
+		console.log('webhookSubscriptions response', return_data);
+		return return_data;
+	};
+	const searchWebhookId = (webhooks, topic, arn) => {
+		let id = null;
+		webhooks.forEach(webhook => {
+			if (webhook?.topic === topic
+				&& webhook?.endpoint?.__typename === "WebhookEventBridgeEndpoint"
+				&& webhook?.endpoint?.arn === arn) {
+				id = webhook.id;
+			}
+		});
+		console.log('the id :', id);
+		return id;
+	};
+	const webhookCreate = async (topic, arn) => {
+		let return_data;
+		try {
+			let response = await fetch('/api/webhookSubscription', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					queryName: 'eventBridgeWebhookSubscriptionCreate',
+					topic: topic,
+					arn: arn,
+				}),
+			});
+			return_data = await response.json();
+			console.log(topic + ': WebhookSubscriptionCreate response', return_data);
+			return return_data ?? [];
+		} catch (e) {
+			console.error(topic + ': WebhookSubscriptionCreate error', e);
+			return null;
+		}
+	};
+
+	// Save
 	const action = async () => {
 		setIsLoading(true);
 		setIsLoadingBtn(true);
@@ -311,6 +418,8 @@ export default function DeliveryCustomization() {
 				console.log(responseJson);
 				// console.log(errors);
 			}
+			// Register webhooks
+			await checkWebhooks();
 		} catch (e) {
 			setToastProps({
 				content: 'Failed Save',
@@ -322,6 +431,7 @@ export default function DeliveryCustomization() {
 		setIsLoadingBtn(false);
 		setUpdated('');
 	};
+
 	const deleteDeliveryCustom = async () => {
 		if (!window.confirm('Are you sure you wanna delete?\nThis action can not be undone.')) {
 			return;
@@ -331,6 +441,7 @@ export default function DeliveryCustomization() {
 			const deleteResponse = await fetch("/api/deliveryCustomizationDelete?gid=" + id);
 			const responseJson = await deleteResponse.json();
 			const errors = responseJson?.userErrors;
+			await deleteWebhooks();
 			if (errors?.length && errors.length > 0) {
 				setToastProps({
 					content: 'Failed Delete',
@@ -347,6 +458,48 @@ export default function DeliveryCustomization() {
 			});
 			setIsLoading(false);
 		}
+	};
+
+	const deleteWebhooks = async () => {
+		// Create subscription in case there isn't registered ones
+		let webhooks = await getWebhookId();
+		let carts_create_id = searchWebhookId(webhooks, 'CARTS_CREATE', common.lambdaArn.CARTS_UPDATE);
+		let promiseArray = [];
+		if (carts_create_id) {
+			// await webhookDelete(carts_create_id);
+			promiseArray.push(webhookDelete(carts_create_id));
+		}
+		let carts_update_id = searchWebhookId(webhooks, 'CARTS_UPDATE', common.lambdaArn.CARTS_UPDATE);
+		if (carts_update_id) {
+			// await webhookDelete(carts_update_id);
+			promiseArray.push(webhookDelete(carts_update_id));
+		}
+		let products_create_id = searchWebhookId(webhooks, 'PRODUCTS_CREATE', common.lambdaArn.PRODUCTS_UPDATE);
+		if (products_create_id) {
+			// await webhookDelete(products_create_id);
+			promiseArray.push(webhookDelete(products_create_id));
+		}
+		let products_update_id = searchWebhookId(webhooks, 'PRODUCTS_UPDATE', common.lambdaArn.PRODUCTS_UPDATE);
+		if (products_update_id) {
+			// await webhookDelete(products_update_id);
+			promiseArray.push(webhookDelete(products_update_id));
+		}
+		if (promiseArray.length > 0) {
+			await Promise.allSettled(promiseArray);
+		}
+		return;
+	};
+	const webhookDelete = async (id) => {
+		return await fetch('/api/webhookSubscription', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				queryName: 'webhookSubscriptionDelete',
+				id: id
+			}),
+		});
 	};
 	const goback = () => {
 		window.history.back();
@@ -427,7 +580,7 @@ export default function DeliveryCustomization() {
 				}}
 				primaryAction={{
 					content: "Save",
-					loading: isLoading && isLoadingBtn,
+					loading: isLoading || isLoadingBtn,
 					onAction: action,
 				}}
 				secondaryActions={[
@@ -508,7 +661,6 @@ export default function DeliveryCustomization() {
 
 	function renderItem(item) {
 		let { id, name, condition } = item;
-		// const media = <Avatar customer size="medium" name={name} />;
 		const url = 'https://admin.shopify.com/store/sample-store-200/settings/shipping/profiles/104451408180';
 		let condition_info = [];
 		if (condition) {

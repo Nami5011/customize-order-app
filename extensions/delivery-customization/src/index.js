@@ -33,9 +33,11 @@ export default /**
 	const configuration = JSON.parse(
 		input?.deliveryCustomization?.metafield?.value ?? "{}"
 	);
+	// No setting
 	if (!configuration.customDeliveryOptions || (configuration.customDeliveryOptions && configuration.customDeliveryOptions.length === 0)) {
 		return NO_CHANGES;
 	}
+	
 	const customDeliveryOptions = configuration.customDeliveryOptions;
 	var preOrders = input.cart.lines.filter((line) => Number(line.attribute?.value) > 0);
 	var preOrderFlg = preOrders && preOrders.length > 0 ? true : false;

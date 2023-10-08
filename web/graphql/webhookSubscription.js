@@ -32,7 +32,7 @@ function webhookSubscriptions(reqBody, res=null) {
 	if (res === null) {
 		// Get request
 		const query = `{
-			webhookSubscriptions(first: 10) {
+			webhookSubscriptions(first: 50) {
 				nodes {
 					id
 					topic

@@ -11,6 +11,7 @@ export const apiPath = {
 }
 export const apiPathLambda = {
 	saveStoreFront: 'https://ke5ie7fajk.execute-api.ap-northeast-1.amazonaws.com/saveStoreFrontDev',
+	savePreorderProductBulk: 'https://z9g7yrsp7d.execute-api.ap-northeast-1.amazonaws.com/savePreorderProductBulkDev',
 }
 export const apiParam = {
 	metafields: {
@@ -27,3 +28,7 @@ export const ownerType = {
 
 export const storefrontTitle ='preorder-dB3v2jY9Itp3';
 export const appNameForLambda ='pre-order';
+export const lambdaArn = {
+	CARTS_UPDATE: 'arn:aws:events:ap-northeast-1::event-source/aws.partner/shopify.com/49716232193/preorder-test',
+	PRODUCTS_UPDATE: 'arn:aws:events:ap-northeast-1::event-source/aws.partner/shopify.com/49716232193/preorder-product-change',
+};
