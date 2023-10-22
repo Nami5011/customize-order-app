@@ -4,38 +4,16 @@
   assign inventory_policy = variant.inventory_policy
   assign inventory_management = variant.inventory_management
 
-  assign variants = product.variants | json
-  assign num = block.id | replace: '-', '_'
-
   assign settings = block.settings
 %}
 
-<script>
+{% if inventory_quantity <= 0 and inventory_management == 'shopify' and inventory_policy == 'continue' %}
+  <script>
+    {% assign num = block.id | replace: '-', '_' %}
     const checkout_default_button_name{{ num }} = '{{ settings.checkout_default_button_name }}';
     const checkout_preorder_button_name{{ num }} = '{{ settings.checkout_preorder_button_name }}';
     const addcart_default_button_name{{ num }} = '{{ settings.addcart_default_button_name }}';
     const addcart_preorder_button_name{{ num }} = '{{ settings.addcart_preorder_button_name }}';
-	var variants{{ num }} = [];
-</script>
-{% if variants != blank %}
-<script>
-	variants{{ num }} = {{ variants }};
-	if (variants{{ num }} && variants{{ num }}.length > 1) {
-		document.addEventListener('DOMContentLoaded', function () {
-			let variantList = mapVariants(variants{{ num }}, [{{ product.variants | map: 'inventory_quantity' | join: ', ' }}], ["{{ product.variants | map: 'inventory_policy' | join: '", "' }}"]);
-			let checkout_default = checkout_default_button_name{{ num }};
-			let checkout_preorder = checkout_preorder_button_name{{ num }};
-			let addcart_default = addcart_default_button_name{{ num }};
-			let addcart_preorder = addcart_preorder_button_name{{ num }};
-
-			installChangeEvent(variantList, checkout_default, checkout_preorder, addcart_default, addcart_preorder);
-		});
-	}
-</script>
-{% endif %}
-
-{% if inventory_quantity <= 0 and inventory_management == 'shopify' and inventory_policy == 'continue' %}
-  <script>
     const modifyContents{{ num }} = function () {
       let elements = document.body.querySelectorAll('*');
       let checkout_elements = [];
@@ -58,6 +36,8 @@
           }
         });
       }
+      // console.log('checkout element', checkout_elements);
+      // console.log('addcart element', addcart_elements);
       if (checkout_elements.length > 0) {
         checkout_elements.forEach(function (elm) {
           elm.innerHTML = checkout_preorder_button_name{{ num }};
@@ -70,13 +50,13 @@
       }
     };
 	var modifyContentsId{{ num }} = '';
-    document.addEventListener('DOMContentLoaded', function () {
+	document.addEventListener('DOMContentLoaded', function () {
 		// console.log('DOMContentLoaded');
-      modifyContents{{ num }}();
-      // setTimeout(modifyContents);
-      modifyContentsId{{ num }} = setInterval(modifyContents{{ num }}, 100);
-    });
-    window.addEventListener('load', function () {
+		modifyContents{{ num }}();
+		// setTimeout(modifyContents);
+		modifyContentsId{{ num }} = setInterval(modifyContents{{ num }}, 100);
+	});
+	window.addEventListener('load', function () {
 		// console.log('loaded ');
 
 		modifyContents{{ num }}();
@@ -84,7 +64,7 @@
 		if (modifyContentsId{{ num }}) {
 			clearInterval(modifyContentsId{{ num }});
 		}
-    });
+	});
   </script>
 {% endif %}
 
@@ -92,7 +72,6 @@
 {
   "name": "Pre Order Button Text",
   "target": "section",
-  "javascript": "variant-inventory-text.js",
   "settings": [
     {
       "type": "header",

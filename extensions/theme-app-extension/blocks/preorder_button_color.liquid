@@ -4,36 +4,105 @@
   assign inventory_policy = variant.inventory_policy
   assign inventory_management = variant.inventory_management
 
+  assign variants = product.variants | json
+  assign num = block.id | replace: '-', '_'
+
   assign settings = block.settings
 %}
 
+<script>
+	var target_checkout_preorder_button_class = '';
+	var target_addcart_preorder_button_class = '';
+</script>
+
+{% if settings.checkout_preorder_button_class != blank %}
+<style>
+  .preorder-dB3v2jY9Itp3-checkout-color {
+	  background-color: {{ settings.checkout_button_color }}!important;
+	  color: {{ settings.checkout_text_color }}!important;
+	  border: {{ settings.checkout_border_thickness }}px solid!important;
+	  border-color: {{ settings.checkout_border_color }}!important;
+  }
+</style>
+<script>
+	target_checkout_preorder_button_class = "{{ settings.checkout_preorder_button_class | replace: '.', '' }}";
+	if (target_checkout_preorder_button_class) {
+		target_checkout_preorder_button_class = target_checkout_preorder_button_class.split(' ')[0];
+	}
+</script>
+{% endif %}
+{% if settings.addcart_preorder_button_class != blank %}
+<style>
+  .preorder-dB3v2jY9Itp3-addcart-color {
+	  background-color: {{ settings.addcart_button_color }}!important;
+	  color: {{ settings.addcart_text_color }}!important;
+	  border: {{ settings.addcart_border_thickness }}px solid!important;
+	  border-color: {{ settings.addcart_border_color }}!important;
+  }
+</style>
+<script>
+	target_addcart_preorder_button_class = "{{ settings.addcart_preorder_button_class | replace: '.', '' }}";
+	if (target_addcart_preorder_button_class) {
+		target_addcart_preorder_button_class = target_addcart_preorder_button_class.split(' ')[0];
+	}
+</script>
+{% endif %}
+
 {% if inventory_quantity <= 0 and inventory_management == 'shopify' and inventory_policy == 'continue' %}
-  {% if settings.checkout_preorder_button_class != blank %}
-    <style>
-      .{{ settings.checkout_preorder_button_class | replace: '.', '' }} {
-          background-color: {{ settings.checkout_button_color }}!important;
-          color: {{ settings.checkout_text_color }}!important;
-          border: {{ settings.checkout_border_thickness }}px solid!important;
-          border-color: {{ settings.checkout_border_color }}!important;
-      }
-    </style>
-  {% endif %}
-  {% if settings.addcart_preorder_button_class != blank %}
-    <style>
-      .{{ settings.addcart_preorder_button_class | replace: '.', '' }} {
-          background-color: {{ settings.addcart_button_color }}!important;
-          color: {{ settings.addcart_text_color }}!important;
-          border: {{ settings.addcart_border_thickness }}px solid!important;
-          border-color: {{ settings.addcart_border_color }}!important;
-      }
-    </style>
-  {% endif %}
+<script>
+	var checkoutId{{ num }} = '';
+	var addcartId{{ num }} = '';
+	document.addEventListener('DOMContentLoaded', function () {
+		// console.log('DOMContentLoaded');
+		if (target_checkout_preorder_button_class) {
+			checkoutId{{ num }} = setInterval(function() {
+				changeButtonColorPreorderdB3v2jY9Itp3(target_checkout_preorder_button_class, 'preorder-dB3v2jY9Itp3-checkout-color');
+			}, 100);
+		}
+		if (target_addcart_preorder_button_class) {
+			addcartId{{ num }} = setInterval(function() {
+				changeButtonColorPreorderdB3v2jY9Itp3(target_addcart_preorder_button_class, 'preorder-dB3v2jY9Itp3-addcart-color');
+			}, 100);
+		}
+	});
+	window.addEventListener('load', function () {
+		// console.log('loaded ');
+		if (checkoutId{{ num }}) {
+			clearInterval(checkoutId{{ num }});
+		}
+		if (addcartId{{ num }}) {
+			clearInterval(addcartId{{ num }});
+		}
+	});
+</script>
+{% endif %}
+
+<script>
+	var variants{{ num }} = [];
+</script>
+{% if variants != blank %}
+<script>
+	variants{{ num }} = {{ variants }};
+	if (variants{{ num }} && variants{{ num }}.length > 1) {
+		document.addEventListener('DOMContentLoaded', function () {
+			let variantList = mapVariants(variants{{ num }}, [{{ product.variants | map: 'inventory_quantity' | join: ', ' }}], ["{{ product.variants | map: 'inventory_policy' | join: '", "' }}"]);
+			// add event addEventListener
+			if (target_checkout_preorder_button_class) {
+				addEventButtonColorPreorderdB3v2jY9Itp3(variantList, target_checkout_preorder_button_class, 'preorder-dB3v2jY9Itp3-checkout-color');
+			}
+			if (target_addcart_preorder_button_class) {
+				addEventButtonColorPreorderdB3v2jY9Itp3(variantList, target_addcart_preorder_button_class, 'preorder-dB3v2jY9Itp3-addcart-color');
+			}
+		});
+	}
+</script>
 {% endif %}
 
 {% schema %}
 {
   "name": "Pre Order Button Colour",
   "target": "section",
+  "javascript": "variant-inventory-color.js",
   "settings": [
     {
       "type": "header",

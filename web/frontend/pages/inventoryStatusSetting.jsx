@@ -440,7 +440,6 @@ function InventoryStatusSettings() {
 												value={msgInstock}
 												onChange={setMsgInstock}
 												placeholder={t("statusSetting.inStock.messagePlaceholder")}
-												helpText={t("statusSetting.inStock.messageHelp")}
 												disabled={isLoading}
 											/>
 											<CustomColorPicker

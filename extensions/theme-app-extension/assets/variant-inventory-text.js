@@ -24,27 +24,31 @@ function installChangeEvent(variants, checkout_default_button_name=null, checkou
 		return;
 	}
 
-	let elements = document.body.querySelectorAll('*');
-	let variantElements = [];
-	elements.forEach(function (elm) {
-		let variant = variants.filter(variant => elm?.innerHTML && variant.title.trim().toLowerCase() === elm.innerHTML.trim().toLowerCase());
-		if (variant && variant.length > 0) {
-			variantElements.push(elm);
-		}
-	});
+	let elements = [];
+	let inputElements = [];
 	elements = document.body.querySelectorAll('input');
 	elements.forEach(function (elm) {
 		let variant = variants.filter(variant => elm?.value && variant.title.trim().toLowerCase() === elm.value.trim().toLowerCase());
 		if (variant && variant.length > 0) {
-			variantElements.push(elm);
+			inputElements.push(elm);
 		}
 	});
+	let otherElements = [];
+	if (inputElements.length === 0) {
+		elements = document.body.querySelectorAll('*');
+		elements.forEach(function (elm) {
+			let variant = variants.filter(variant => elm?.innerHTML && variant.title.trim().toLowerCase() === elm.innerHTML.trim().toLowerCase());
+			if (variant && variant.length > 0) {
+				otherElements.push(elm);
+			}
+		});
+	}
 	// console.log('variants', variants);
-
-	if (variantElements.length > 0) {
-		variantElements.forEach(function (elm) {
+	console.log('1327');
+	if (inputElements.length > 0) {
+		inputElements.forEach(function (elm) {
 			elm.addEventListener("input", (e) => {
-				let count = 0;
+				// let count = 0;
 				let isPreorder = false;
 				let variant = variants.filter(variant => e?.target?.value && variant.title.trim().toLowerCase() === e.target.value.trim().toLowerCase());
 				if (
@@ -56,56 +60,79 @@ function installChangeEvent(variants, checkout_default_button_name=null, checkou
 				) {
 					isPreorder = true;
 				}
-				function childFunction() {
+				setTimeout(function() {
 					if (isPreorder) {
 						// change to pre-order button
 						changeInnerHTML(checkout_default_button_name, checkout_preorder_button_name, addcart_default_button_name, addcart_preorder_button_name);
 					} else {
 						// change to buy it now button
 						changeInnerHTML(checkout_preorder_button_name, checkout_default_button_name, addcart_preorder_button_name, addcart_default_button_name);
+						changeInnerHTML(checkout_default_button_name, checkout_default_button_name, addcart_default_button_name, addcart_default_button_name);
 					}
-					count++;
+				}, 10);
+				// function childFunction() {
+				// 	if (isPreorder) {
+				// 		// change to pre-order button
+				// 		changeInnerHTML(checkout_default_button_name, checkout_preorder_button_name, addcart_default_button_name, addcart_preorder_button_name);
+				// 	} else {
+				// 		// change to buy it now button
+				// 		changeInnerHTML(checkout_preorder_button_name, checkout_default_button_name, addcart_preorder_button_name, addcart_default_button_name);
+				// 	}
+				// 	count++;
 				
-					// Check if the function has been called 10 times (0 to 9).
-					if (count >= 2) {
-						clearInterval(intervalID); // Clear the interval after 10 calls.
-					}
-				}
-				let intervalID = setInterval(childFunction, 100);
-			});
-			elm.addEventListener("click", (e) => {
-				let count = 0;
-				let isPreorder = false;
-				let variant = variants.filter(variant => e?.target?.value && variant.title.trim().toLowerCase() === e.target.value.trim().toLowerCase());
-				if (
-					variant
-					&& variant.length > 0
-					&& variant[0].inventory_quantity <= 0
-					&& variant[0].inventory_policy == 'continue'
-					&& variant[0].inventory_management == 'shopify'
-				) {
-					isPreorder = true;
-				}
-				function childFunction() {
-					if (isPreorder) {
-						// change to pre-order button
-						changeInnerHTML(checkout_default_button_name, checkout_preorder_button_name, addcart_default_button_name, addcart_preorder_button_name);
-					} else {
-						// change to buy it now button
-						changeInnerHTML(checkout_preorder_button_name, checkout_default_button_name, addcart_preorder_button_name, addcart_default_button_name);
-					}
-					count++;
-				
-					// Check if the function has been called 10 times (0 to 9).
-					if (count >= 2) {
-						clearInterval(intervalID); // Clear the interval after 10 calls.
-					}
-				}
-				let intervalID = setInterval(childFunction, 100);
+				// 	// Check if the function has been called 10 times (0 to 9).
+				// 	if (count >= 2) {
+				// 		clearInterval(intervalID); // Clear the interval after 10 calls.
+				// 	}
+				// }
+				// let intervalID = setInterval(childFunction, 100);
 			});
 		});
 	}
-
+	if (otherElements.length > 0) {
+		otherElements.forEach(function (elm) {
+			elm.addEventListener("click", (e) => {
+				// let count = 0;
+				let isPreorder = false;
+				let variant = variants.filter(variant => e?.target?.value && variant.title.trim().toLowerCase() === e.target.value.trim().toLowerCase());
+				if (
+					variant
+					&& variant.length > 0
+					&& variant[0].inventory_quantity <= 0
+					&& variant[0].inventory_policy == 'continue'
+					&& variant[0].inventory_management == 'shopify'
+				) {
+					isPreorder = true;
+				}
+				setTimeout(function() {
+					if (isPreorder) {
+						// change to pre-order button
+						changeInnerHTML(checkout_default_button_name, checkout_preorder_button_name, addcart_default_button_name, addcart_preorder_button_name);
+					} else {
+						// change to buy it now button
+						changeInnerHTML(checkout_preorder_button_name, checkout_default_button_name, addcart_preorder_button_name, addcart_default_button_name);
+						changeInnerHTML(checkout_default_button_name, checkout_default_button_name, addcart_default_button_name, addcart_default_button_name);
+					}
+				}, 10);
+				// function childFunction() {
+				// 	if (isPreorder) {
+				// 		// change to pre-order button
+				// 		changeInnerHTML(checkout_default_button_name, checkout_preorder_button_name, addcart_default_button_name, addcart_preorder_button_name);
+				// 	} else {
+				// 		// change to buy it now button
+				// 		changeInnerHTML(checkout_preorder_button_name, checkout_default_button_name, addcart_preorder_button_name, addcart_default_button_name);
+				// 	}
+				// 	count++;
+				
+				// 	// Check if the function has been called 10 times (0 to 9).
+				// 	if (count >= 2) {
+				// 		clearInterval(intervalID); // Clear the interval after 10 calls.
+				// 	}
+				// }
+				// let intervalID = setInterval(childFunction, 100);
+			});
+		});
+	}
 	return;
 }
 
@@ -133,7 +160,8 @@ function changeInnerHTML(checkout_default_button_name=null, checkout_preorder_bu
 	}
 	if (checkout_elements.length > 0) {
 		checkout_elements.forEach(function (elm, index) {
-			checkout_elements[index].innerHTML = checkout_preorder_button_name;
+		// console.log('elm:', checkout_elements[index].innerHTML);
+		checkout_elements[index].innerHTML = checkout_preorder_button_name;
 		});
 	}
 	if (addcart_elements.length > 0) {

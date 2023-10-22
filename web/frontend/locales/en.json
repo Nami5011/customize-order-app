@@ -27,7 +27,7 @@
 		"title": "In Stock Status",
 		"description": "",
 		"messagePlaceholder": "Example: In stock",
-		"messageHelp": "Use the variable \"{number}\" to display the number of inventory"
+		"messageHelp": ""
 	},
 	"lowStock": {
 		"title": "Low Inventory Status",
