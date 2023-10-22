@@ -8,7 +8,11 @@
 	}
 }
 
-.icon_inventory__custom {
+.icon_inventory__custom,
+.icon_inventory__custom_low,
+.icon_inventory__custom_stock,
+.icon_inventory__custom_preorder,
+.icon_inventory__custom_soldout {
     position: relative;
     width: 25px;
     height: 25px;
@@ -19,7 +23,15 @@
 }
 
 .icon_inventory__custom:after,
-.icon_inventory__custom:before {
+.icon_inventory__custom:before,
+.icon_inventory__custom_low:after,
+.icon_inventory__custom_low:before,
+.icon_inventory__custom_stock:after,
+.icon_inventory__custom_stock:before,
+.icon_inventory__custom_preorder:after,
+.icon_inventory__custom_preorder:before,
+.icon_inventory__custom_soldout:after,
+.icon_inventory__custom_soldout:before {
 	width: 9px;
 	height: 9px;
 	border-radius: 9px;
@@ -30,7 +42,11 @@
 	margin: 8px;
 }
 
-.icon_inventory__custom:before {
+.icon_inventory__custom:before,
+.icon_inventory__custom_low:before,
+.icon_inventory__custom_stock:before,
+.icon_inventory__custom_preorder:before,
+.icon_inventory__custom_soldout:before {
 	animation: inventory-pulse-icon25 2s linear infinite;
 }
 
