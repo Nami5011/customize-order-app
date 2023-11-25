@@ -106,8 +106,6 @@ function changeInventoryStatusPreorderdB3v2jY9Itp3(variant, blockId, rangeLowInv
 		}
 		if (stockLowElement && stockLowElement.classList.contains(hide_class)) {
 			stockLowElement.classList.remove(hide_class);
-			textElement = stockLowElement.querySelector('#text');
-			textElement.textContent = message_lowinventory.replace(/{number}/g, variant[0].inventory_quantity);
 		}
 		if (preorderElement && !preorderElement.classList.contains(hide_class)) {
 			preorderElement.classList.add(hide_class);
@@ -115,6 +113,8 @@ function changeInventoryStatusPreorderdB3v2jY9Itp3(variant, blockId, rangeLowInv
 		if (soldoutElement && !soldoutElement.classList.contains(hide_class)) {
 			soldoutElement.classList.add(hide_class);
 		}
+		textElement = stockLowElement.querySelector('#text');
+		textElement.textContent = message_lowinventory.replace(/{number}/g, variant[0].inventory_quantity);
 	} else if (
 		variant[0].inventory_quantity <= 0
 		&& variant[0].inventory_policy == 'continue'
