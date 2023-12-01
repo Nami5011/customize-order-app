@@ -39,7 +39,7 @@ export default /**
 	}
 	
 	const customDeliveryOptions = configuration.customDeliveryOptions;
-	var preOrders = input.cart.lines.filter((line) => Number(line.attribute?.value) > 0);
+	var preOrders = input.cart.lines.filter((line) => line.attribute?.key === 'Pre-order');
 	var preOrderFlg = preOrders && preOrders.length > 0 ? true : false;
 
 	let hideOperations = input.cart.deliveryGroups
