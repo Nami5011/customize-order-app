@@ -82,7 +82,9 @@
 		  modifyContents{{ num }}();
 		  // clearInterval(modifyContents{{ num }});
 		  if (modifyContentsId{{ num }}) {
-			  clearInterval(modifyContentsId{{ num }});
+			  setTimeout(() => {
+				clearInterval(modifyContentsId{{ num }});
+			  }, 3000);
 		  }
 	  });
 	</script>
