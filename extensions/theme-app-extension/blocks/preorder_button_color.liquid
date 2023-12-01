@@ -68,7 +68,9 @@
 	window.addEventListener('load', function () {
 		// console.log('loaded ');
 		if (checkoutId{{ num }}) {
-			clearInterval(checkoutId{{ num }});
+			setTimeout(() => {
+				clearInterval(checkoutId{{ num }});
+			}, 3000);
 		}
 		if (addcartId{{ num }}) {
 			clearInterval(addcartId{{ num }});

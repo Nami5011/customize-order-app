@@ -1,0 +1,65 @@
+{% liquid
+  assign variant = product.selected_or_first_available_variant
+  assign inventory_quantity = variant.inventory_quantity
+  assign inventory_policy = variant.inventory_policy
+  assign inventory_management = variant.inventory_management
+
+  assign variants = product.variants | json
+  assign num = block.id | replace: '-', '_'
+  assign settings = block.settings
+
+  if settings.cart_message_preorder != blank
+    assign cart_msg_preorder = settings.cart_message_preorder
+  else
+    assign cart_msg_preorder = 'Available for Pre-order'
+  endif
+%}
+
+{% if variants != blank %}
+<script>
+	document.addEventListener('DOMContentLoaded', function () {
+		let variants = {{ variants }};
+		let cart_msg_preorder = '{{ cart_msg_preorder }}';
+		let selectedVariantTitle = '{{ variant.title }}';
+		// console.log('variants', variants);
+		// console.log('selectedVariantTitle', selectedVariantTitle);
+		if (variants) {
+			let variantList = mapVariants(variants, [{{ product.variants | map: 'inventory_quantity' | join: ', ' }}], ["{{ product.variants | map: 'inventory_policy' | join: '", "' }}"]);
+			let selectedVariant = variantList.find((variant) => {
+				return variant?.title === selectedVariantTitle;
+			});
+			// console.log('selectedVariant', selectedVariant);
+			cartProperties_dB3v2jY9Itp3(variantList, selectedVariant, cart_msg_preorder);
+		}
+	});
+</script>
+{% endif %}
+
+{% if 0 >= inventory_quantity and inventory_policy == 'continue' and inventory_management == 'shopify' %}
+<script>
+	document.addEventListener('DOMContentLoaded', function () {
+		let cart_msg_preorder = '{{ cart_msg_preorder }}';
+		let formElm = getAddCartFormElement_B3v2jY9Itp3();
+		addPropElm_B3v2jY9Itp3(formElm, cart_msg_preorder);
+	});
+</script>
+{% endif %}
+
+{% schema %}
+{
+  "name": "Message for Cart Page",
+  "javascript": "cart_properties.js",
+  "target": "section",
+  "settings": [
+	{
+		"type": "header",
+		"content": "Message for Cart Page"
+	},
+	{
+		"type": "text",
+		"id": "cart_message_preorder",
+		"label": "Pre-order Message: This will be added to the cart properties."
+	}
+  ]
+}
+{% endschema %}
