@@ -1,0 +1,105 @@
+/* same as theme app extension */
+@keyframes inventory-pulse-icon25 {
+	0% {
+		opacity: 0.5;
+	}
+	to {
+		transform: scale(2.5);
+		opacity: 0;
+	}
+}
+:root {
+	--color-stock: #000000;
+	--color-low: #000000;
+	--color-preorder: #000000;
+	--color-soldout: #000000;
+	--pseudo-background-stock: #000000;
+	--pseudo-background-low: #000000;
+	--pseudo-background-preorder: #000000;
+	--pseudo-background-soldout: #000000;
+}
+
+.icon_inventory__custom_low,
+.icon_inventory__custom_stock,
+.icon_inventory__custom_preorder,
+.icon_inventory__custom_soldout {
+    position: relative;
+    width: 25px;
+    height: 25px;
+    margin-right: 10px;
+	display: inline-block;
+	vertical-align: middle;
+	fill: currentColor;
+}
+.icon_inventory__custom_stock {
+	color: var(--color-stock);
+}
+.icon_inventory__custom_low {
+	color: var(--color-low);
+}
+.icon_inventory__custom_preorder {
+	color: var(--color-preorder);
+}
+.icon_inventory__custom_soldout {
+	color: var(--color-soldout);
+}
+
+.icon_inventory__custom_low:after,
+.icon_inventory__custom_low:before,
+.icon_inventory__custom_stock:after,
+.icon_inventory__custom_stock:before,
+.icon_inventory__custom_preorder:after,
+.icon_inventory__custom_preorder:before,
+.icon_inventory__custom_soldout:after,
+.icon_inventory__custom_soldout:before {
+	width: 9px;
+	height: 9px;
+	border-radius: 9px;
+	position: absolute;
+	left: 0;
+	top: 0;
+	content: "";
+	margin: 8px;
+}
+.icon_inventory__custom_stock:after,
+.icon_inventory__custom_stock:before {
+	background: var(--pseudo-background-stock);
+}
+.icon_inventory__custom_low:after,
+.icon_inventory__custom_low:before {
+	background: var(--pseudo-background-low);
+}
+.icon_inventory__custom_preorder:after,
+.icon_inventory__custom_preorder:before {
+	background: var(--pseudo-background-preorder);
+}
+.icon_inventory__custom_soldout:after,
+.icon_inventory__custom_soldout:before {
+	background: var(--pseudo-background-soldout);
+}
+
+.icon_inventory__custom_low:before,
+.icon_inventory__custom_stock:before,
+.icon_inventory__custom_preorder:before,
+.icon_inventory__custom_soldout:before {
+	animation: inventory-pulse-icon25 2s linear infinite;
+}
+
+.inventory_list__custom {
+	display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+}
+
+.inventory_list_block__custom, .inventory_list__custom {
+	list-style: none!important;
+}
+
+.inventory_list_block__custom {
+	padding-left: 0;
+	margin-left: 0;
+}
+
+
+/* setting original */
+

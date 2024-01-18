@@ -8,19 +8,25 @@
     "yourAppIsReadyToExplore": "Deine App kann nun erkundet werden! Sie enthält alles, was du brauchst, um loszulegen: das <PolarisLink>Polaris Designsystem</PolarisLink>, die <AdminApiLink>Shopify Admin API</AdminApiLink> und die <AppBridgeLink>App Bridge</AppBridgeLink>-UI-Bibliothek sowie entsprechende Komponenten."
   },
   "CustomizeInventoryStatus": {
-	"title": "Customize Inventory Status 💡",
-	"discription": "The inventory status in our app allows you to personalize and display custom messages for different inventory statuses on your store.",
-	"message1": "Here's how it works:",
-	"step1title": "1. Customice Inventory Status",
-	"step1-1": "Activate the inventory status on the Inventory Status Setting page.",
-	"step1-2": "You can input your desired custom inventory status messages.",
-	"step2title": "2. Display on Your Store",
-	"step2-1": "Add our app block to your preferred section on the theme customization page of your Shopify admin panel.",
-	"message2": "That's it! With our custom inventory status, you can enhance the shopping experience for your customers by providing clear and personalized messages."
+	"title": "Welcome to Pre-order Light! 🌟",
+	"discription": "We're happy to help you start Pre-order and boost your sales! Follow the steps to get started and let the Pre-order begin!",
+	"step1title": "1. Customize Inventory Status",
+	"continueSelling": "1. Go to the product page and activate \"Track quantity\" and \"Continue selling when out of stock\" checkboxes in Inventory section",
+	"inventoryStatus": "2. Customize inventory status",
+	"inventoryStatusBtn": "Go to inventory status setting",
+	"buyButton": "3. Customize buy button",
+	"buyButtonBtn": "Go to buy button",
+	"cartMessage": "4. Customize cart message",
+	"cartMessageBtn": "Go to cart message",
+	"deliveryOption": "5. Customize delivery option",
+	"deliveryOptionBtn": "Go to delivery option"
   },
   "NavigationMenu": {
-    "pageName": "Seitenname",
-    "inventoryStatusSetting": "Inventory Status Setting"
+    "pageName": "Page name",
+    "inventoryStatusSetting": "Inventory Status Setting",
+	"buyButton": "Buy Button",
+	"cartMessage": "Cart Message",
+	"deliveryOption": "Delivery Option"
   },
   "statusSetting": {
 	"inStock": {
@@ -58,8 +64,120 @@
 	"saveButton": "Save setting",
 	"saved": "Setting saved!",
 	"invaildHex": "Error: Hex colour is invalid",
-	"FailedSave": "Failed save"
+	"FailedSave": "Failed save",
+	"instructionTitle": "Customize inventory status",
+	"preview": "Preview",
+	"instructions": {
+		"1": "Set up the status settings below on this page",
+		"2-1": "Click ",
+		"2-2": "",
+		"3-1": "Go to ",
+		"3-2": "Online Store > Themes",
+		"3-3": "",
+		"4-1": "Find the theme that you want to edit, and then click ",
+		"4-2": "Customize",
+		"4-3": "",
+		"5-1": "In the template selector, click ",
+		"5-2": "Products > Product template",
+		"5-3": "",
+		"6-1": "In the template Product section, click ",
+		"6-2": "+Add block",
+		"6-3": "",
+		"7-1": "In the Add block selector, click ",
+		"7-2": "Inventory Status",
+		"7-3": "",
+		"8": "Click Save"
+	}
   },
+  "buyButton": {
+	"textInstructionTitle": "Customize Button Text for Pre-order products",
+	"textInstructions": {
+		"1-1": "From your Shopify admin, go to ",
+		"1-2": "Online Store > Themes",
+		"1-3": "",
+		"2-1": "Find the theme that you want to edit, and then click ",
+		"2-2": "Customize",
+		"2-3": "",
+		"3-1": "In the template selector, click ",
+		"3-2": "Products > Product template",
+		"3-3": "",
+		"4-1": "In the template Product section, click ",
+		"4-2": "+Add block",
+		"4-3": "",
+		"5-1": "In the Add block selector, click ",
+		"5-2": "Pre Order Button Text",
+		"5-3": "",
+		"6": "Click the add block that you added",
+		"7": "Enter the default button text and pre-order button text",
+		"8": "Click Save"
+	},
+	"colorInstructionTitle": "Customize Button Colour for Pre-order products",
+	"colorInstructions": {
+		"1-1": "From your Shopify admin, go to ",
+		"1-2": "Online Store > Themes",
+		"1-3": "",
+		"2-1": "Find the theme that you want to edit, and then click ",
+		"2-2": "Customize",
+		"2-3": "",
+		"3-1": "In the template selector, click ",
+		"3-2": "Products > Product template",
+		"3-3": "",
+		"4-1": "In the template Product section, click ",
+		"4-2": "+Add block",
+		"4-3": "",
+		"5-1": "In the Add block selector, click ",
+		"5-2": "Pre Order Button Color",
+		"5-3": "",
+		"6": "Click the add block that you added",
+		"7": "Enter the CSS class name that affects the button color, and choose the  button color, text color, and border thickness if needed",
+		"8": "Click Save"
+	}
+  },
+  "cartMessage": {
+	"instructionTitle": "Add a message for Pre-order products to the cart",
+	"instructions": {
+		"1-1": "From your Shopify admin, go to ",
+		"1-2": "Online Store > Themes",
+		"1-3": "",
+		"2-1": "Find the theme that you want to edit, and then click ",
+		"2-2": "Customize",
+		"2-3": "",
+		"3-1": "In the template selector, click ",
+		"3-2": "Products > Product template",
+		"3-3": "",
+		"4-1": "In the template Product section, click ",
+		"4-2": "+Add block",
+		"4-3": "",
+		"5-1": "In the Add block selector, click ",
+		"5-2": "Message for Cart Page",
+		"5-3": "",
+		"6": "Click the add block that you added",
+		"7": "Enter the cart message",
+		"8": "Click Save"
+	}
+  },
+  "deliveryOption": {
+	"instructionTitle": "Customize delivery options",
+	"instructions": {
+		"1-1": "Add a cart message following the steps of the ",
+		"1-2": "Cart message page",
+		"1-3": "",
+		"2-1": "From your Shopify admin, go to ",
+		"2-2": "Settings > Shipping and delivery",
+		"2-3": " or go to the page from ",
+		"2-4": "here",
+		"2-5": "",
+		"3-1": "Click ",
+		"3-2": "Manage",
+		"3-3": " under Delivery customizations",
+		"4-1": "Click ",
+		"4-2": "Add a Customization > Delivery Custom",
+		"4-3": "",
+		"5": "Select display condition",
+		"6": "Click Save"
+	}
+  },
+  "contactUs": "Need help? Feel free to contact us from the chat room!",
   "NotFound": {
     "description": "Überprüfe die URL und versuche es erneut. Alternativ kannst du die Suchleiste verwenden, um zu finden, was du suchst.",
     "heading": "Unter dieser Adresse gibt es keine Seite"

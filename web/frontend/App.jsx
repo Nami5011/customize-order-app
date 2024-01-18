@@ -30,6 +30,14 @@ export default function App() {
 									label: t("NavigationMenu.inventoryStatusSetting"),
 									destination: "/inventoryStatusSetting",
 								},
+								{
+									label: t("NavigationMenu.buyButton"),
+									destination: "/buyButton",
+								},
+								{
+									label: t("NavigationMenu.cartMessage"),
+									destination: "/cartMessage",
+								},
 							]}
 						/>
 						<Routes pages={pages} />

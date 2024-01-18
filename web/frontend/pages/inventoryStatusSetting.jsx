@@ -9,6 +9,7 @@ import { useAppQuery, useAuthenticatedFetch } from "../hooks";
 import { apiPath, apiParam, ownerType } from '../../common-variable';
 import { CustomColorPicker } from "../components";
 import { hsbToRgb, hexToRgbObject } from "../utils/colorConvert";
+import './css/inventoryStatusSetting.css';
 
 function InventoryStatusSettings() {
 	const { t } = useTranslation();
@@ -26,15 +27,35 @@ function InventoryStatusSettings() {
 	const isValidHex = (hex) => {
 		return hexToRgbObject(hex) ? true : false;
 	}
-	const handleHexChange = (value, setHsb, setHex) => {
+	const changeIconPreview = (hex, cssVariable) => {
+		if (!cssVariable || (cssVariable && cssVariable.length === 0)) {
+			return;
+		}
+		// console.log(hex)
+
+		let root = document.querySelector(":root");
+
+		let rootStyle = getComputedStyle(root);
+		// console.log('--color-stock', rootStyle.getPropertyValue('--color-stock'))
+		// console.log(root.style)
+		// console.log(cssVariable)
+
+		cssVariable.forEach((val) => {
+			root.style.setProperty(val, hex);
+		});
+	}
+	const handleHexChange = (value, setHsb, setHex, cssVariable = []) => {
 		if (isValidHex(value)) {
 			setHsb(hexToHsb(value));
 		}
 		setHex(value);
+		changeIconPreview(value, cssVariable);
 	}
-	const handleHsbChange = (value, setHsb, setHex) => {
+	const handleHsbChange = (value, setHsb, setHex, cssVariable = []) => {
 		setHsb(value);
-		setHex(hsbToHex(value));
+		let hex = hsbToHex(value);
+		setHex(hex);
+		changeIconPreview(hex, cssVariable);
 	}
 
 	const fetch = useAuthenticatedFetch();
@@ -80,6 +101,10 @@ function InventoryStatusSettings() {
 	const [hexMsgOutOfStock, setHexMsgOutOfStock] = useState(defaultColorBlack);
 
 	const init = async () => {
+		let _hexIconInstock = defaultColorGreen;
+		let _hexIconLowInventory = defaultColorYellow;
+		let _hexIconPreorder = defaultColorYellow;
+		let _hexIconOutOfStock = defaultColorGray;
 		try {
 			// console.log('fetch: ' + metafieldsApiPath + '?namespace=' + namespace + '&key=' + key);
 			let metafields = await fetch(metafieldsApiPath + '?namespace=' + namespace + '&key=' + key);
@@ -98,16 +123,18 @@ function InventoryStatusSettings() {
 				// set the data in form
 				setShowInstockFlg(value.showInstockFlg ?? false);
 				setIconTypeInstock(value.iconTypeInstock ?? ['icon']);
-				setColorIconInstock(hexToHsb(value.hexIconInstock ? value.hexIconInstock : defaultColorGreen));
-				setHexIconInstock(value.hexIconInstock ? value.hexIconInstock : defaultColorGreen);
+				_hexIconInstock = value.hexIconInstock ? value.hexIconInstock : defaultColorGreen;
+				setColorIconInstock(hexToHsb(_hexIconInstock));
+				setHexIconInstock(_hexIconInstock);
 				setMsgInstock(value.msgInstock ?? '');
 				setColorMsgInstock(hexToHsb(value.hexMsgInstock ? value.hexMsgInstock : defaultColorBlack));
 				setHexMsgInstock(value.hexMsgInstock ? value.hexMsgInstock : defaultColorBlack);
 
 				setShowLowInventoryFlg(value.showLowInventoryFlg ?? false);
 				setIconTypeLowInventory(value.iconTypeLowInventory ?? ['icon']);
-				setColorIconLowInventory(hexToHsb(value.hexIconLowInventory ? value.hexIconLowInventory : defaultColorYellow));
-				setHexIconLowInventory(value.hexIconLowInventory ? value.hexIconLowInventory : defaultColorYellow);
+				_hexIconLowInventory = value.hexIconLowInventory ? value.hexIconLowInventory : defaultColorYellow;
+				setColorIconLowInventory(hexToHsb(_hexIconLowInventory));
+				setHexIconLowInventory(_hexIconLowInventory);
 				setRangeLowInventory(value.rangeLowInventory ?? 3);
 				setMsgLowInventory(value.msgLowInventory ?? '');
 				setColorMsgLowInventory(hexToHsb(value.hexMsgLowInventory ? value.hexMsgLowInventory : defaultColorBlack));
@@ -115,16 +142,18 @@ function InventoryStatusSettings() {
 
 				setShowPreorderFlg(value.showPreorderFlg ?? false);
 				setIconTypePreorder(value.iconTypePreorder ?? ['icon']);
-				setColorIconPreorder(hexToHsb(value.hexIconPreorder ? value.hexIconPreorder : defaultColorYellow));
-				setHexIconPreorder(value.hexIconPreorder ? value.hexIconPreorder : defaultColorYellow);
+				_hexIconPreorder = value.hexIconPreorder ? value.hexIconPreorder : defaultColorYellow;
+				setColorIconPreorder(hexToHsb(_hexIconPreorder));
+				setHexIconPreorder(_hexIconPreorder);
 				setMsgPreorder(value.msgPreorder ?? '');
 				setColorMsgPreorder(hexToHsb(value.hexMsgPreorder ? value.hexMsgPreorder : defaultColorBlack));
 				setHexMsgPreorder(value.hexMsgPreorder ? value.hexMsgPreorder : defaultColorBlack);
 
 				setShowOutOfStockFlg(value.showOutOfStockFlg ?? false);
 				setIconTypeOutOfStock(value.iconTypeOutOfStock ?? ['icon']);
-				setColorIconOutOfStock(hexToHsb(value.hexIconOutOfStock ? value.hexIconOutOfStock : defaultColorGray));
-				setHexIconOutOfStock(value.hexIconOutOfStock ? value.hexIconOutOfStock : defaultColorGray);
+				_hexIconOutOfStock = value.hexIconOutOfStock ? value.hexIconOutOfStock : defaultColorGray;
+				setColorIconOutOfStock(hexToHsb(_hexIconOutOfStock));
+				setHexIconOutOfStock(_hexIconOutOfStock);
 				setMsgOutOfStock(value.msgOutOfStock ?? '');
 				setColorMsgOutOfStock(hexToHsb(value.hexMsgOutOfStock ? value.hexMsgOutOfStock : defaultColorBlack));
 				setHexMsgOutOfStock(value.hexMsgOutOfStock ? value.hexMsgOutOfStock : defaultColorBlack);
@@ -139,6 +168,10 @@ function InventoryStatusSettings() {
 			console.error('message', errData);
 			setIsLoading(false);
 		}
+		changeIconPreview(_hexIconInstock, ['--color-stock', '--pseudo-background-stock']);
+		changeIconPreview(_hexIconLowInventory, ['--color-low', '--pseudo-background-low']);
+		changeIconPreview(_hexIconPreorder, ['--color-preorder', '--pseudo-background-preorder']);
+		changeIconPreview(_hexIconOutOfStock, ['--color-soldout', '--pseudo-background-soldout']);
 	}
 
 	useEffect(() => {
@@ -307,9 +340,9 @@ function InventoryStatusSettings() {
 			isSelected && (
 				<CustomColorPicker
 					title={t("statusSetting.iconColorTitle")}
-					setColor={value => handleHsbChange(value, setColorIconInstock, setHexIconInstock)}
+					setColor={value => handleHsbChange(value, setColorIconInstock, setHexIconInstock, ['--color-stock', '--pseudo-background-stock'])}
 					color={colorIconInstock}
-					setHex={value => handleHexChange(value, setColorIconInstock, setHexIconInstock)}
+					setHex={value => handleHexChange(value, setColorIconInstock, setHexIconInstock, ['--color-stock', '--pseudo-background-stock'])}
 					hex={hexIconInstock}
 					disabled={isLoading}
 				/>
@@ -327,9 +360,9 @@ function InventoryStatusSettings() {
 			isSelected && (
 				<CustomColorPicker
 					title={t("statusSetting.iconColorTitle")}
-					setColor={value => handleHsbChange(value, setColorIconLowInventory, setHexIconLowInventory)}
+					setColor={value => handleHsbChange(value, setColorIconLowInventory, setHexIconLowInventory, ['--color-low', '--pseudo-background-low'])}
 					color={colorIconLowInventory}
-					setHex={value => handleHexChange(value, setColorIconLowInventory, setHexIconLowInventory)}
+					setHex={value => handleHexChange(value, setColorIconLowInventory, setHexIconLowInventory, ['--color-low', '--pseudo-background-low'])}
 					hex={hexIconLowInventory}
 					disabled={isLoading}
 				/>
@@ -347,9 +380,9 @@ function InventoryStatusSettings() {
 			isSelected && (
 				<CustomColorPicker
 					title={t("statusSetting.iconColorTitle")}
-					setColor={value => handleHsbChange(value, setColorIconPreorder, setHexIconPreorder)}
+					setColor={value => handleHsbChange(value, setColorIconPreorder, setHexIconPreorder, ['--color-preorder', '--pseudo-background-preorder'])}
 					color={colorIconPreorder}
-					setHex={value => handleHexChange(value, setColorIconPreorder, setHexIconPreorder)}
+					setHex={value => handleHexChange(value, setColorIconPreorder, setHexIconPreorder, ['--color-preorder', '--pseudo-background-preorder'])}
 					hex={hexIconPreorder}
 					disabled={isLoading}
 				/>
@@ -367,9 +400,9 @@ function InventoryStatusSettings() {
 			isSelected && (
 				<CustomColorPicker
 					title={t("statusSetting.iconColorTitle")}
-					setColor={value => handleHsbChange(value, setColorIconOutOfStock, setHexIconOutOfStock)}
+					setColor={value => handleHsbChange(value, setColorIconOutOfStock, setHexIconOutOfStock, ['--color-soldout', '--pseudo-background-soldout'])}
 					color={colorIconOutOfStock}
-					setHex={value => handleHexChange(value, setColorIconOutOfStock, setHexIconOutOfStock)}
+					setHex={value => handleHexChange(value, setColorIconOutOfStock, setHexIconOutOfStock, ['--color-soldout', '--pseudo-background-soldout'])}
 					hex={hexIconOutOfStock}
 					disabled={isLoading}
 				/>
@@ -397,6 +430,25 @@ function InventoryStatusSettings() {
 					loading: isLoading,
 				}}
 			>
+				<Text as="h3" variant="headingMd">
+					{t("statusSetting.instructionTitle")}
+				</Text>
+				<div style={{ "margin-bottom": '20px' }}>
+					<AlphaCard roundedAbove="sm">
+						<ol>
+							<li>{t("statusSetting.instructions.1")}.</li>
+							<li>{t("statusSetting.instructions.2-1")}<strong>{t("statusSetting.saveButton")}</strong>{t("statusSetting.instructions.2-2")}.</li>
+							<li>{t("statusSetting.instructions.3-1")}<strong>{t("statusSetting.instructions.3-2")}</strong>{t("statusSetting.instructions.3-3")}.</li>
+							<li>{t("statusSetting.instructions.4-1")}<strong>{t("statusSetting.instructions.4-2")}</strong>{t("statusSetting.instructions.4-3")}.</li>
+							<li>{t("statusSetting.instructions.5-1")}<strong>{t("statusSetting.instructions.5-2")}</strong>{t("statusSetting.instructions.5-3")}.</li>
+							<li>{t("statusSetting.instructions.6-1")}<strong>{t("statusSetting.instructions.6-2")}</strong>{t("statusSetting.instructions.6-3")}.</li>
+							<li>{t("statusSetting.instructions.7-1")}<strong>{t("statusSetting.instructions.7-2")}</strong>{t("statusSetting.instructions.7-3")}.</li>
+							<li>{t("statusSetting.instructions.8")}.</li>
+						</ol>
+						{t("contactUs")}
+					</AlphaCard>
+				</div>
+
 				<VerticalStack gap={{ xs: "8", sm: "4" }}>
 					<HorizontalGrid columns={{ xs: "1fr", md: "2fr 5fr" }} gap="4">
 						<Box
@@ -408,9 +460,23 @@ function InventoryStatusSettings() {
 								<Text as="h3" variant="headingMd">
 									{t("statusSetting.inStock.title")}
 								</Text>
-								<Text as="p" variant="bodyMd">
-
-								</Text>
+								<Collapsible open={showInstockFlg}>
+									<AlphaCard roundedAbove="sm">
+										<VerticalStack gap="4">
+											<Text as="h5">
+												{t("statusSetting.preview")}
+											</Text>
+											<div id="preview">
+												<ul id="status_stock" className="inventory_list_block__custom">
+													<li className="inventory_list__custom">
+														{iconTypeInstock[0] === 'icon' && <span className="icon_inventory__custom_stock"></span>}
+														<span id="text" style={{ color: hexMsgInstock }}>{msgInstock}</span>
+													</li>
+												</ul>
+											</div>
+										</VerticalStack>
+									</AlphaCard>
+								</Collapsible>
 							</VerticalStack>
 						</Box>
 						<AlphaCard roundedAbove="sm">
@@ -470,6 +536,23 @@ function InventoryStatusSettings() {
 								<Text as="p" variant="bodyMd">
 
 								</Text>
+								<Collapsible open={showLowInventoryFlg}>
+									<AlphaCard roundedAbove="sm">
+										<VerticalStack gap="4">
+											<Text as="h5">
+												{t("statusSetting.preview")}
+											</Text>
+											<div id="preview">
+												<ul id="status_stock" className="inventory_list_block__custom">
+													<li className="inventory_list__custom">
+														{iconTypeLowInventory[0] === 'icon' && <span className="icon_inventory__custom_low"></span>}
+														<span id="text" style={{ color: hexMsgLowInventory }}>{msgLowInventory.replace(/{number}/g, '1')}</span>
+													</li>
+												</ul>
+											</div>
+										</VerticalStack>
+									</AlphaCard>
+								</Collapsible>
 							</VerticalStack>
 						</Box>
 						<AlphaCard roundedAbove="sm">
@@ -550,6 +633,23 @@ function InventoryStatusSettings() {
 								<Text as="p" variant="bodyMd">
 									{t("statusSetting.preOrder.description")}
 								</Text>
+								<Collapsible open={showPreorderFlg}>
+									<AlphaCard roundedAbove="sm">
+										<VerticalStack gap="4">
+											<Text as="h5">
+												{t("statusSetting.preview")}
+											</Text>
+											<div id="preview">
+												<ul id="status_stock" className="inventory_list_block__custom">
+													<li className="inventory_list__custom">
+														{iconTypePreorder[0] === 'icon' && <span className="icon_inventory__custom_preorder"></span>}
+														<span id="text" style={{ color: hexMsgPreorder }}>{msgPreorder}</span>
+													</li>
+												</ul>
+											</div>
+										</VerticalStack>
+									</AlphaCard>
+								</Collapsible>
 							</VerticalStack>
 						</Box>
 						<AlphaCard roundedAbove="sm">
@@ -609,6 +709,23 @@ function InventoryStatusSettings() {
 								<Text as="p" variant="bodyMd">
 
 								</Text>
+								<Collapsible open={showOutOfStockFlg}>
+									<AlphaCard roundedAbove="sm">
+										<VerticalStack gap="4">
+											<Text as="h5">
+												{t("statusSetting.preview")}
+											</Text>
+											<div id="preview">
+												<ul id="status_stock" className="inventory_list_block__custom">
+													<li className="inventory_list__custom">
+														{iconTypeOutOfStock[0] === 'icon' && <span className="icon_inventory__custom_soldout"></span>}
+														<span id="text" style={{ color: hexMsgOutOfStock }}>{msgOutOfStock}</span>
+													</li>
+												</ul>
+											</div>
+										</VerticalStack>
+									</AlphaCard>
+								</Collapsible>
 							</VerticalStack>
 						</Box>
 						<AlphaCard roundedAbove="sm">

@@ -14,6 +14,8 @@ import { storefrontAccessTokenCreate } from "./graphql/storefrontAccessToken.js"
 import * as webhook from "./graphql/webhookSubscription.js";
 import * as deliveryProfile from './graphql/deliveryProfile.js';
 import * as productVariant from './graphql/productVariant.js';
+import * as shop from './graphql/shop.js';
+import * as appSubscription from './graphql/appSubscription.js';
 import { GraphqlQueryError, DataType } from '@shopify/shopify-api';
 const PORT = parseInt(
   process.env.BACKEND_PORT || process.env.PORT || "3000",
@@ -112,6 +114,55 @@ app.post('/api/productVariant', async (req, res) => {
 		return res.status(200).send(result);
 	} catch (error) {
 		console.error('response error', error);
+		// Handle errors thrown by the graphql client
+		if (!(error instanceof GraphqlQueryError)) {
+			throw res.status(500).send('GraphqlQueryError');
+		}
+		return res.status(500).send({ error: error.response });
+	}
+});
+
+// shop query
+app.post('/api/shop', async (req, res) => {
+	const graphqlClient = new shopify.api.clients.Graphql({
+		session: res.locals.shopify.session
+	});
+	try {
+		// Get data here
+		const queryData = shop.getQueryData(req);
+		const response = await graphqlClient.query({
+			data: queryData,
+		});
+		// Get response data here
+		let result = shop.getResData(req, response);
+		return res.status(200).send(result);
+	} catch (error) {
+		console.error('response error', error);
+		// Handle errors thrown by the graphql client
+		if (!(error instanceof GraphqlQueryError)) {
+			throw res.status(500).send('GraphqlQueryError');
+		}
+		return res.status(500).send({ error: error.response });
+	}
+});
+
+// appSubscription query
+app.post('/api/appSubscription', async (req, res) => {
+	const graphqlClient = new shopify.api.clients.Graphql({
+		session: res.locals.shopify.session
+	});
+	try {
+		// Get data here
+		const queryData = appSubscription.getQueryData(req);
+		const response = await graphqlClient.query({
+			data: queryData,
+		});
+		// Get response data here
+		let result = appSubscription.getResData(req, response);
+		return res.status(200).send(result);
+	} catch (error) {
+		console.error('response error', error);
+		console.error('response errors', error?.response?.errors);
 		// Handle errors thrown by the graphql client
 		if (!(error instanceof GraphqlQueryError)) {
 			throw res.status(500).send('GraphqlQueryError');
