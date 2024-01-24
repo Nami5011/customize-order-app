@@ -18,6 +18,8 @@ function getData(req, res=null) {
 		data = appSubscriptionCreate(reqBody, res);
 	} else if (queryName === 'appInstallations' ) {
 		data = appInstallations(reqBody, res);
+	} else if (queryName === 'appSubscriptionCancel' ) {
+		data = appSubscriptionCancel(reqBody, res);
 	}
 	return data;
 }
@@ -75,25 +77,54 @@ function appInstallations(reqBody, res=null) {
 		// Get request
 		let query = `{
 			currentAppInstallation {
-			  allSubscriptions(first: 50) {
-				nodes {
-				  name
-				  id
-				  status
+				activeSubscriptions {
+					name
+					id
+					status
 				}
-			  }
-			  app {
-				id
 				launchUrl
-			  }
 			}
-		  }`;
+		}`;
 		data = {
 			query: query,
 		};
 	} else {
 		// Get response
-		data = res?.body?.data;
+		data = res?.body?.data?.currentAppInstallation;
+		if (!data) {
+			data = res;
+		}
+	}
+	return data;
+};
+
+function appSubscriptionCancel(reqBody, res=null) {
+	let data;
+	if (res === null) {
+		// Get request
+		let query = `mutation appSubscriptionCancel($id: ID!) {
+			appSubscriptionCancel(id: $id) {
+				appSubscription {
+					name
+					id
+					status
+				}
+				userErrors {
+					field
+					message
+				}
+			}
+		}`;
+		data = {
+			query: query,
+			variables: {
+				id: reqBody.id,
+			},
+		};
+	} else {
+		// Get response
+		data = res?.body?.data?.appSubscriptionCancel;
+		console.log(res)
 		if (!data) {
 			data = res;
 		}

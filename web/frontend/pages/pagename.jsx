@@ -1,9 +1,14 @@
-import { Card, Page, Layout, TextContainer, Text, Box } from "@shopify/polaris";
+import {
+	Card, Page, Layout, TextContainer, Text, Box, AlphaCard, IndexTable,
+	Badge,
+	useBreakpoints,
+} from "@shopify/polaris";
 import { TitleBar } from "@shopify/app-bridge-react";
 import { useTranslation } from "react-i18next";
 import { apiPath, apiParam, ownerType } from '../../common-variable';
 import { useState, useEffect, useCallback } from 'react';
 import { useAppQuery, useAuthenticatedFetch } from "../hooks";
+import { getAppInstallations } from "../utils/appSubscription";
 
 export default function PageName() {
 	const { t } = useTranslation();
@@ -104,6 +109,81 @@ export default function PageName() {
 			return null;
 		}
 	};
+
+	/**
+	 * Subscription
+	 */
+	const [subscriptions, setsubscriptions] = useState([]);
+	const getSubscriptions = async () => {
+		let appInstallations;
+		try {
+			appInstallations = await getAppInstallations(fetch);
+			if (appInstallations?.activeSubscriptions === undefined) {
+				console.error('appInstallations', appInstallations);
+				throw new Error('AppInstallations empty');
+			}
+		} catch (e) {
+			console.error('appInstallations failed', e);
+			return;
+		}
+		// setsubscriptions([...appInstallations.allSubscriptions.nodes]);
+		renderSubscription(appInstallations.activeSubscriptions);
+	}
+	const renderSubscription = (newSubscription) => {
+		let markupList = newSubscription.map(
+			(
+				{ name, id, status },
+				index
+			) => (
+				<IndexTable.Row id={id} key={id} position={index}>
+					<IndexTable.Cell>
+						<Text variant="bodyMd" fontWeight="bold" as="span">
+							{index + 1}
+						</Text>
+					</IndexTable.Cell>
+					<IndexTable.Cell>{id}</IndexTable.Cell>
+					<IndexTable.Cell>{name}</IndexTable.Cell>
+					{/* <IndexTable.Cell>
+						<Text as="span" alignment="end" numeric>
+							{total}
+						</Text>
+					</IndexTable.Cell> */}
+					{/* <IndexTable.Cell>{status}</IndexTable.Cell> */}
+					<IndexTable.Cell><Badge progress={status == 'ACTIVE' ? 'complete' : 'incomplete'}>{status}</Badge></IndexTable.Cell>
+					<IndexTable.Cell>
+						{
+							status != 'CANCELLED' && <button onClick={() => cancelSubscription(id)}>Cancel</button>
+						}
+					</IndexTable.Cell>
+				</IndexTable.Row>
+			)
+		);
+		setsubscriptions(markupList);
+	}
+	const cancelSubscription = async (id) => {
+		console.log(id)
+		try {
+			let cancelledSubscription = await fetch('/api/appSubscription', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					queryName: 'appSubscriptionCancel',
+					id: id
+				}),
+			});
+			if (cancelledSubscription.ok) {
+				cancelledSubscription = await cancelledSubscription.json();
+			}
+			console.log('cancelled subscription', cancelledSubscription);
+		} catch (e) {
+			console.error('cancelledSubscription failed (cancelSubscription)');
+			return e;
+		}
+		// rerender subscriptions
+		getSubscriptions();
+	}
 	return (
 		<Page>
 			<TitleBar
@@ -148,7 +228,7 @@ export default function PageName() {
 						</Box>
 					)}
 				</Layout.Section>
-				<Layout.Section secondary>
+				{/* <Layout.Section secondary>
 					<Card sectioned>
 						<Text variant="headingMd" as="h2">
 							{t("PageName.heading")}
@@ -157,8 +237,32 @@ export default function PageName() {
 							<p>{t("PageName.body")}</p>
 						</TextContainer>
 					</Card>
-				</Layout.Section>
+				</Layout.Section> */}
 			</Layout>
+			<div style={{ "marginBottom": '20px' }}>
+				<Text as="h3" variant="headingMd">
+					Active Subscription
+				</Text>
+				<AlphaCard roundedAbove="sm">
+					<button
+						onClick={getSubscriptions}
+					>get subscription</button>
+					<IndexTable
+						condensed={useBreakpoints().smDown}
+						itemCount={subscriptions.length}
+						headings={[
+							{ title: 'No.' },
+							{ title: 'Id' },
+							{ title: 'Name' },
+							{ title: 'Payment status' },
+							{ title: 'Action' },
+						]}
+						selectable={false}
+					>
+						{subscriptions}
+					</IndexTable>
+				</AlphaCard>
+			</div>
 		</Page>
 	);
 }
