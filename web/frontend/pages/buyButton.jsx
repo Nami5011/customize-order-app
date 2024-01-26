@@ -4,9 +4,27 @@ import {
 	AlphaCard,
 } from "@shopify/polaris";
 import { useTranslation, Trans } from "react-i18next";
+import { useAuthenticatedFetch } from "../hooks";
+import { useState, useEffect, useCallback } from 'react';
+import { useAppBridge, Loading } from "@shopify/app-bridge-react";
+import { Redirect } from '@shopify/app-bridge/actions';
+import { checkAppSubscription } from "../utils/appSubscription";
 
 export default function HomePage() {
 	const { t } = useTranslation();
+	const fetch = useAuthenticatedFetch();
+	const app = useAppBridge();
+	const appRedirect = Redirect.create(app);
+	const appSubscriptionCheck = async () => {
+		let subscription = await checkAppSubscription(fetch);
+		if (subscription?.existBillFlg === false) {
+			appRedirect.dispatch(Redirect.Action.APP, '/');
+		}
+	}
+	useEffect(() => {
+		appSubscriptionCheck();
+	}, []);
+
 	return (
 		<Page
 			backAction={{ content: 'App Top', url: '/' }}

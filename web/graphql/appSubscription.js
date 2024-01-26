@@ -84,14 +84,21 @@ function appInstallations(reqBody, res=null) {
 				}
 				launchUrl
 			}
+			shop {
+				name
+			}
 		}`;
 		data = {
 			query: query,
 		};
 	} else {
 		// Get response
-		data = res?.body?.data?.currentAppInstallation;
-		if (!data) {
+		if (res?.body?.data?.currentAppInstallation) {
+			data = {};
+			data.activeSubscriptions = res?.body?.data?.currentAppInstallation?.activeSubscriptions;
+			data.launchUrl = res?.body?.data?.currentAppInstallation?.launchUrl;
+			data.name = res?.body?.data?.shop?.name;
+		} else {
 			data = res;
 		}
 	}

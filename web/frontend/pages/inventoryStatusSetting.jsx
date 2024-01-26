@@ -2,7 +2,7 @@ import {
 	VerticalStack, HorizontalGrid, Box, Page, Text, AlphaCard, TextField, Checkbox, Collapsible, ChoiceList, ColorPicker, RangeSlider, HorizontalStack, Button,
 	hsbToHex, rgbToHsb
 } from "@shopify/polaris";
-import { TitleBar, Toast } from "@shopify/app-bridge-react";
+import { TitleBar, Toast, useAppBridge, Loading } from "@shopify/app-bridge-react";
 import { useTranslation, Trans } from "react-i18next";
 import { useState, useEffect, useCallback } from 'react';
 import { useAppQuery, useAuthenticatedFetch } from "../hooks";
@@ -10,6 +10,8 @@ import { apiPath, apiParam, ownerType } from '../../common-variable';
 import { CustomColorPicker } from "../components";
 import { hsbToRgb, hexToRgbObject } from "../utils/colorConvert";
 import './css/inventoryStatusSetting.css';
+import { Redirect } from '@shopify/app-bridge/actions';
+import { checkAppSubscription } from "../utils/appSubscription";
 
 function InventoryStatusSettings() {
 	const { t } = useTranslation();
@@ -20,6 +22,18 @@ function InventoryStatusSettings() {
 	const toastMarkup = toastProps.content && (
 		<Toast {...toastProps} onDismiss={() => setToastProps(emptyToastProps)} />
 	);
+
+	const fetch = useAuthenticatedFetch();
+	const app = useAppBridge();
+	const appRedirect = Redirect.create(app);
+	const appSubscriptionCheck = async () => {
+		let subscription = await checkAppSubscription(fetch);
+		if (subscription?.existBillFlg === false) {
+			appRedirect.dispatch(Redirect.Action.APP, '/');
+			return false;
+		}
+		return true;
+	}
 
 	const hexToHsb = (hex) => {
 		return rgbToHsb(hexToRgbObject(hex));
@@ -58,7 +72,6 @@ function InventoryStatusSettings() {
 		changeIconPreview(hex, cssVariable);
 	}
 
-	const fetch = useAuthenticatedFetch();
 	const metafieldsApiPath = apiPath.metafields;
 	const namespace = apiParam.metafields.namespace;
 	const key = apiParam.metafields.key;
@@ -101,6 +114,10 @@ function InventoryStatusSettings() {
 	const [hexMsgOutOfStock, setHexMsgOutOfStock] = useState(defaultColorBlack);
 
 	const init = async () => {
+		let subscriptionCheckResult = await appSubscriptionCheck();
+		if (!subscriptionCheckResult) {
+			return;
+		}
 		let _hexIconInstock = defaultColorGreen;
 		let _hexIconLowInventory = defaultColorYellow;
 		let _hexIconPreorder = defaultColorYellow;

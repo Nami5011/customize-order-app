@@ -30,23 +30,25 @@ export default function HomePage() {
 
 	const [checkingSubscription, setCheckingSubscription] = useState(true);
 	const appSubscriptionCheck = async () => {
-		let subscription = await checkAppSubscription(fetch, appRedirect, Redirect);
+		let subscription = await checkAppSubscription(fetch, true);
 		// console.log('subscription', subscription);
-		if (subscription?.existBillFlg === true && subscription.errors.length === 0) {
+		if (subscription?.existBillFlg === false && subscription.errors.length === 0) {
+			appRedirect.dispatch(Redirect.Action.REMOTE, subscription.confirmationUrl);
+		} else if (subscription?.existBillFlg === true && subscription.errors.length === 0) {
 			setCheckingSubscription(false);
-		} else if (subscription?.errors && subscription.errors.length > 0) {
+		} else {
 			// error
 			console.error('Subscription Error', subscription.errors);
 		}
 	};
-	if (checkingSubscription) {
-		return <Loading />;
-	}
 
 	useEffect(() => {
 		appSubscriptionCheck();
 	}, []);
 
+	if (checkingSubscription) {
+		return <Loading />;
+	}
 	return (
 		<Page narrowWidth>
 			{/* <TitleBar title={t("HomePage.title")} primaryAction={null} /> */}

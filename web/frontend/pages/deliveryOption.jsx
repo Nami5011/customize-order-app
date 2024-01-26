@@ -7,11 +7,30 @@ import {
 import { useTranslation, Trans } from "react-i18next";
 import { useAppQuery, useAuthenticatedFetch } from "../hooks";
 import { useState, useEffect, useCallback } from 'react';
+import { useAppBridge, Loading } from "@shopify/app-bridge-react";
+import { Redirect } from '@shopify/app-bridge/actions';
+import { checkAppSubscription } from "../utils/appSubscription";
+
 export default function HomePage() {
 	const { t } = useTranslation();
 	const fetch = useAuthenticatedFetch();
+	const app = useAppBridge();
+	const appRedirect = Redirect.create(app);
+	const appSubscriptionCheck = async () => {
+		let subscription = await checkAppSubscription(fetch);
+		if (subscription?.existBillFlg === false) {
+			appRedirect.dispatch(Redirect.Action.APP, '/');
+			return false;
+		}
+		return true;
+	}
+
 	const [deliveryOptionUrl, setDeliveryOptionUrl] = useState('/');
-	const fetchData = async () => {
+	const init = async () => {
+		let subscriptionCheckResult = await appSubscriptionCheck();
+		if (!subscriptionCheckResult) {
+			return;
+		}
 		try {
 			let navigationSettings = await fetch('/api/shop', {
 				method: 'POST',
@@ -35,8 +54,9 @@ export default function HomePage() {
 		}
 	};
 	useEffect(() => {
-		fetchData();
+		init();
 	}, []);
+
 	return (
 		<Page
 			backAction={{ content: 'App Top', url: '/' }}
