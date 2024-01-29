@@ -13,11 +13,13 @@ import { useAuthenticatedFetch } from "../../../hooks/useAuthenticatedFetch";
 import {
 	useParams,
 } from "react-router-dom";
-import { Toast } from "@shopify/app-bridge-react";
+import { Toast, useAppBridge } from "@shopify/app-bridge-react";
 // import { Buffer } from 'buffer';
 import axios from "axios";
 import * as common from '../../../../common-variable.js';
 // import { getSessionToken } from "@shopify/app-bridge/utilities";
+import { Redirect } from '@shopify/app-bridge/actions';
+import { checkAppSubscription } from '../../../utils/appSubscription';
 
 const ALWAYS = 'ALWAYS';
 const INSTOCK_ONLY = 'INSTOCK_ONLY';
@@ -30,8 +32,22 @@ const CHOICELIST = [
 
 export default function DeliveryCustomization() {
 	const fetch = useAuthenticatedFetch();
+	const app = useAppBridge();
+	const appRedirect = Redirect.create(app);
+	const appSubscriptionCheck = async () => {
+		let subscription = await checkAppSubscription(fetch);
+		if (subscription?.existBillFlg === false) {
+			appRedirect.dispatch(Redirect.Action.APP, '/');
+			return false;
+		}
+		return true;
+	}
+
 	const params = useParams();
-	const { functionId, id } = params;
+	// const { functionId, id } = params;
+	const [id, set_id] = useState(params.id);
+	const [functionId, set_functionId] = useState(params.functionId);
+	const [gid, set_gid] = useState(`gid://shopify/DeliveryCustomization/${id}`);
 	// console.log(params)
 	// inputs
 	const [stateProvinceCode, setStateProvinceCode] = useState('');
@@ -62,21 +78,37 @@ export default function DeliveryCustomization() {
 	var shopify_domain = '';
 
 	const loader = async () => {
+		let subscriptionCheckResult = await appSubscriptionCheck();
+		if (!subscriptionCheckResult) {
+			return;
+		}
 		// Get exist delivery customization
-		var customOptions = [];
+		let customOptions = [];
+		let deliveryCustomizationReqBody = {};
+		deliveryCustomizationReqBody.queryName = 'deliveryCustomization';
+		deliveryCustomizationReqBody.title = 'Delivery Custom';
+		if (id != "new") {
+			deliveryCustomizationReqBody.gid = gid;
+		}
 		try {
-			if (id != "new") {
-				const deliveryCustomizationResponse = await fetch("/api/deliveryCustomization?gid=" + id);
-				const deliveryCustomization = await deliveryCustomizationResponse.json();
-				// console.log('exist deliveryCustomization', deliveryCustomization);
-				const metafieldValue = JSON.parse(deliveryCustomization.metafield.value);
-				setStateProvinceCode(metafieldValue.stateProvinceCode);
-				setMessage(metafieldValue.message);
-				if (metafieldValue.customDeliveryOptions && metafieldValue.customDeliveryOptions.length > 0) {
-					setCustomDeliveryOptions(metafieldValue.customDeliveryOptions);
-					customOptions = metafieldValue.customDeliveryOptions;
-				}
+			// const deliveryCustomizationResponse = await fetch("/api/deliveryCustomization?gid=" + id);
+			const deliveryCustomizationResponse = await fetch('/api/deliveryCustomization', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify(deliveryCustomizationReqBody),
+			});
+			const deliveryCustomization = await deliveryCustomizationResponse.json();
+			// console.log('exist deliveryCustomization', deliveryCustomization);
+			const metafieldValue = deliveryCustomization?.metafield?.value ? JSON.parse(deliveryCustomization.metafield.value) : null;
+			// setStateProvinceCode(metafieldValue.stateProvinceCode);
+			// setMessage(metafieldValue.message);
+			if (metafieldValue?.customDeliveryOptions && metafieldValue.customDeliveryOptions.length > 0) {
+				setCustomDeliveryOptions(metafieldValue.customDeliveryOptions);
+				customOptions = metafieldValue.customDeliveryOptions;
 			}
+			updateId(deliveryCustomization);
 		} catch (e) {
 			console.error(e);
 		}
@@ -106,7 +138,7 @@ export default function DeliveryCustomization() {
 		if (deliveryProfiles && deliveryProfiles.length > 0) {
 			defaultProfileId = deliveryProfiles[0].id;
 		}
-		console.log('defaultProfileId', defaultProfileId);
+		// console.log('defaultProfileId', defaultProfileId);
 
 		// Get delivery options
 		let methodDefinitions;
@@ -146,6 +178,14 @@ export default function DeliveryCustomization() {
 
 		setIsLoading(false);
 	};
+	const updateId = (deliveryCustomization) => {
+		if (deliveryCustomization?.id) {
+			let id_parts = deliveryCustomization.id.split('/');
+			set_id(id_parts[id_parts.length - 1]);
+			set_gid(deliveryCustomization.id);
+		};
+		if (deliveryCustomization?.functionId) set_functionId(deliveryCustomization.functionId);
+	}
 
 	const getToken = async () => {
 		// Get Storefront Access Token
@@ -251,8 +291,8 @@ export default function DeliveryCustomization() {
 	};
 	const init = async () => {
 		// Get Storefront Access Token
-		await getToken();
-		await savePreorderProducts();
+		// await getToken();
+		// await savePreorderProducts();
 		setIsLoadingBtn(false);
 	};
 	useEffect(() => {
@@ -309,16 +349,16 @@ export default function DeliveryCustomization() {
 		return return_data;
 	};
 	const searchWebhookId = (webhooks, topic, arn) => {
-		let id = null;
+		let webhook_id = null;
 		webhooks.forEach(webhook => {
 			if (webhook?.topic === topic
 				&& webhook?.endpoint?.__typename === "WebhookEventBridgeEndpoint"
 				&& webhook?.endpoint?.arn === arn) {
-				id = webhook.id;
+				webhook_id = webhook.id;
 			}
 		});
-		console.log('the id :', id);
-		return id;
+		console.log('webhook_id :', webhook_id);
+		return webhook_id;
 	};
 	const webhookCreate = async (topic, arn) => {
 		let return_data;
@@ -347,9 +387,9 @@ export default function DeliveryCustomization() {
 	const action = async () => {
 		setIsLoading(true);
 		setIsLoadingBtn(true);
-		const deliveryCustomizationInput = {
+		let deliveryCustomizationInput = {
 			functionId: functionId,
-			title: `Change ${stateProvinceCode} delivery message`,
+			title: 'Delivery Custom',
 			enabled: true,
 			metafields: [
 				{
@@ -357,8 +397,8 @@ export default function DeliveryCustomization() {
 					key: "function-configuration",
 					type: "json",
 					value: {
-						stateProvinceCode: stateProvinceCode,
-						message: message,
+						stateProvinceCode: '',
+						message: '',
 						domain: domain,
 						storefront: storefront,
 						customDeliveryOptions: deliveryOptions,
@@ -366,60 +406,43 @@ export default function DeliveryCustomization() {
 				},
 			],
 		};
-		const createData = {
-			id: id,
+		let updateData = {
+			gid: gid,
 			deliveryCustomization: deliveryCustomizationInput,
+		};
+		let reqBody = id != "new" ? updateData : deliveryCustomizationInput;
+		if (id != "new") {
+			reqBody = updateData;
+			reqBody.queryName = 'deliveryCustomizationUpdate';
+		} else {
+			reqBody = deliveryCustomizationInput;
+			reqBody.queryName = 'deliveryCustomizationCreate';
 		}
-		console.log('deliveryCustomizationInput', deliveryCustomizationInput);
+		// console.log('reqBody', reqBody);
 		try {
-			if (id != "new") {
-				// update
-				let response = await fetch('/api/deliveryCustomizationUpdate', {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					body: JSON.stringify(createData),
+			let response = await fetch('/api/deliveryCustomization', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify(reqBody),
+			});
+			const responseJson = await response.json();
+			// console.log('responce', responseJson)
+			updateId(responseJson?.deliveryCustomization);
+			const errors = responseJson?.userErrors;
+			if (errors?.length && errors.length > 0) {
+				setToastProps({
+					content: 'Failed Save',
+					error: true,
 				});
-				const responseJson = await response.json();
-				console.log('updated responce', responseJson)
-				const errors = responseJson?.userErrors;
-				if (errors?.length && errors.length > 0) {
-					setToastProps({
-						content: 'Failed Save',
-						error: true,
-					});
-				} else {
-					setToastProps({
-						content: 'Saved',
-					});
-				}
 			} else {
-				// create
-				let response = await fetch('/api/deliveryCustomizationCreate', {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					body: JSON.stringify(deliveryCustomizationInput),
+				setToastProps({
+					content: 'Saved',
 				});
-				const responseJson = await response.json();
-				const errors = responseJson?.userErrors;
-				if (errors?.length && errors.length > 0) {
-					setToastProps({
-						content: 'Failed Save',
-						error: true,
-					});
-				} else {
-					setToastProps({
-						content: 'Saved',
-					});
-				}
-				console.log(responseJson);
-				// console.log(errors);
 			}
 			// Register webhooks
-			await checkWebhooks();
+			// await checkWebhooks();
 		} catch (e) {
 			setToastProps({
 				content: 'Failed Save',
@@ -433,15 +456,24 @@ export default function DeliveryCustomization() {
 	};
 
 	const deleteDeliveryCustom = async () => {
-		if (!window.confirm('Are you sure you wanna delete?\nThis action can not be undone.')) {
+		if (!window.confirm('This action can not be undone.')) {
 			return;
 		}
 		setIsLoading(true);
 		try {
-			const deleteResponse = await fetch("/api/deliveryCustomizationDelete?gid=" + id);
+			const deleteResponse = await fetch('/api/deliveryCustomization', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					queryName: 'deliveryCustomizationDelete',
+					gid: gid,
+				}),
+			});
 			const responseJson = await deleteResponse.json();
 			const errors = responseJson?.userErrors;
-			await deleteWebhooks();
+			// await deleteWebhooks();
 			if (errors?.length && errors.length > 0) {
 				setToastProps({
 					content: 'Failed Delete',
@@ -573,7 +605,7 @@ export default function DeliveryCustomization() {
 		<>
 			{toastMarkup}
 			<Page
-				title="Change delivery message"
+				title="Delivery custom"
 				backAction={{
 					content: 'Delivery customizations',
 					onAction: goback,

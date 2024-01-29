@@ -13,6 +13,7 @@ import { metafieldStorefrontVisibilities, metafieldStorefrontVisibilityCreate } 
 import { storefrontAccessTokenCreate } from "./graphql/storefrontAccessToken.js";
 import * as webhook from "./graphql/webhookSubscription.js";
 import * as deliveryProfile from './graphql/deliveryProfile.js';
+import * as deliveryCustomization from './graphql/deliveryCustomization.js';
 import * as productVariant from './graphql/productVariant.js';
 import * as shop from './graphql/shop.js';
 import * as appSubscription from './graphql/appSubscription.js';
@@ -297,358 +298,156 @@ function handleUserError(userErrors, res) {
 	}
 	return false;
 }
-// deliveryCustomizationCreate
-app.post("/api/deliveryCustomizationCreate", async (req, res) => {
-	const payload = req.body;
-	const graphqlClient = new shopify.api.clients.Graphql({
-		session: res.locals.shopify.session
-	});
-	const metafield = payload.metafields[0];
-	try {
-		// Create the delivery customization for the provided function ID
-		const response = await graphqlClient.query({
-			data: {
-				query: `#graphql
-				mutation createDeliveryCustomization($input: DeliveryCustomizationInput!) {
-					deliveryCustomizationCreate(deliveryCustomization: $input) {
-						deliveryCustomization {
-							id
-						}
-						userErrors {
-							message
-						}
-					}
-				}`,
-				variables: {
-					input: {
-						functionId: payload.functionId,
-						title: payload.title,
-						enabled: true,
-						metafields: [
-							{
-								namespace: "$app:delivery-customization",
-								key: "function-configuration",
-								type: "json",
-								value: JSON.stringify({
-									stateProvinceCode: metafield.value.stateProvinceCode,
-									message: metafield.value.message,
-									domain: metafield.value.domain,////////////////////
-									storefront: metafield.value.storefront,
-									customDeliveryOptions: metafield.value.customDeliveryOptions,
-								}),
-							}
-						],
-					},
-				}
-			},
-		});
-		
-		let updateResult = response.body.data.deliveryCustomizationCreate;
-		if (handleUserError(updateResult.userErrors, res)) {
-			return;
-		}
-		return res.status(200).send(updateResult);
-	} catch (error) {
-		// Handle errors thrown by the graphql client
-		if (!(error instanceof GraphqlQueryError)) {
-		throw error;
-		}
-		return res.status(500).send({ error: error.response });
-	}
-});
 
-// deliveryCustomizationUpdate
-app.post("/api/deliveryCustomizationUpdate", async (req, res) => {
-	const payload = req.body;
+// deliveryCustomization
+app.post('/api/deliveryCustomization', async (req, res) => {
 	const graphqlClient = new shopify.api.clients.Graphql({
 		session: res.locals.shopify.session
 	});
-	const metafield = payload.deliveryCustomization.metafields[0];
 	try {
-		// Create the delivery customization for the provided function ID
+		// Get data here
+		const queryData = deliveryCustomization.getQueryData(req);
 		const response = await graphqlClient.query({
-			data: {
-				query: `#graphql
-				mutation updateDeliveryCustomization($id: ID!, $input: DeliveryCustomizationInput!) {
-					deliveryCustomizationUpdate(id: $id, deliveryCustomization: $input) {
-						deliveryCustomization {
-							id
-						}
-						userErrors {
-							message
-						}
-					}
-				}`,
-				variables: {
-					id: `gid://shopify/DeliveryCustomization/${payload.id}`,
-					input: {
-						functionId: payload.deliveryCustomization.functionId,
-						title: payload.deliveryCustomization.title,
-						enabled: true,
-						metafields: [
-							{
-								namespace: "$app:delivery-customization",
-								key: "function-configuration",
-								type: "json",
-								value: JSON.stringify({
-									stateProvinceCode: metafield.value.stateProvinceCode,
-									message: metafield.value.message,
-									domain: metafield.value.domain,
-									storefront: metafield.value.storefront,
-									customDeliveryOptions: metafield.value.customDeliveryOptions,
-								}),
-							}
-						],
-					},
-				}
-			},
+			data: queryData,
 		});
-		let result = response.body.data.deliveryCustomizationUpdate;
-		if (handleUserError(result.userErrors, res)) {
-			return;
-		}
+		// Get response data here
+		let result = deliveryCustomization.getResData(req, response);
 		return res.status(200).send(result);
 	} catch (error) {
+		console.error('response error', error)
 		// Handle errors thrown by the graphql client
 		if (!(error instanceof GraphqlQueryError)) {
-		throw error;
+			throw res.status(500).send('GraphqlQueryError');
 		}
 		return res.status(500).send({ error: error.response });
 	}
 });
 
-// deliveryCustomizationDelete
-app.get("/api/deliveryCustomizationDelete", async (req, res) => {
-	const { gid } = req.query;
-	const graphqlClient = new shopify.api.clients.Graphql({
-		session: res.locals.shopify.session
-	});
-	try {
-		// Create the delivery customization for the provided function ID
-		const response = await graphqlClient.query({
-			data: {
-				query: `#graphql
-				mutation deliveryCustomizationDelete($id: ID!) {
-					deliveryCustomizationDelete(id: $id) {
-						deletedId
-						userErrors {
-							field
-							message
-						}
-					}
-				}`,
-				variables: {
-					id: `gid://shopify/DeliveryCustomization/${gid}`,
-				}
-			},
-		});
-		let result = response.body.data.deliveryCustomizationDelete;
-		if (handleUserError(result.userErrors, res)) {
-			return;
-		}
-		return res.status(200).send(result);
-	} catch (error) {
-		// Handle errors thrown by the graphql client
-		if (!(error instanceof GraphqlQueryError)) {
-		throw error;
-		}
-		return res.status(500).send({ error: error.response });
-	}
-});
+// app.get("/api/shop/primaryDomain", async (req, res) => {
+// 	const graphqlClient = new shopify.api.clients.Graphql({
+// 		session: res.locals.shopify.session
+// 	});
+// 	let result = {};
+// 	try {
+// 		// Create the delivery customization for the provided function ID
+// 		const response = await graphqlClient.query({
+// 			data: {
+// 				query: `{
+// 					shop {
+// 						primaryDomain {
+// 							url
+// 						}
+// 					}
+// 				}`,
+// 			},
+// 		});
+// 		result = response.body.data.shop?.primaryDomain;
 
-// get deliveryCustomization
-app.get("/api/deliveryCustomization", async (req, res) => {
-	const graphqlClient = new shopify.api.clients.Graphql({
-		session: res.locals.shopify.session
-	});
-	const { gid } = req.query;
-	console.log(gid)
-	let result = [];
-	try {
-		// Create the delivery customization for the provided function ID
-		if (gid) {
-			const response = await graphqlClient.query({
-				data: {
-				query: `#graphql
-				query getDeliveryCustomization($id: ID!) {
-					deliveryCustomization(id: $id) {
-					id
-					title
-					enabled
-					metafield(namespace: "$app:delivery-customization", key: "function-configuration") {
-						id
-						value
-					}
-					}
-				}`,
-					variables: {
-					id: `gid://shopify/DeliveryCustomization/${gid}`,
-					},
-				},
-			});
-			result = response.body.data.deliveryCustomization;
-		} else {
-			const response = await graphqlClient.query({
-				data: {
-				query: `{
-					deliveryCustomizations(first: 100) {
-						edges {
-						node {
-							id
-							title
-							metafields(first: 1) {
-							nodes {
-								id
-								value
-							}
-							}
-						}
-						}
-					}
-					}`,
-				},
-			});
-			result = response.body.data.deliveryCustomizations?.edges;
-		}
+// 	} catch (error) {
+// 		// Handle errors thrown by the graphql client
+// 		if (!(error instanceof GraphqlQueryError)) {
+// 		throw error;
+// 		}
+// 		return res.status(500).send({ error: error.response });
+// 	}
+// 	return res.status(200).send(result);
 
+// });
 
-	} catch (error) {
-		// Handle errors thrown by the graphql client
-		if (!(error instanceof GraphqlQueryError)) {
-		throw error;
-		}
-		return res.status(500).send({ error: error.response });
-	}
-	return res.status(200).send(result);
-
-});
-
-// get deliveryCustomization
-app.get("/api/shop/primaryDomain", async (req, res) => {
-	const graphqlClient = new shopify.api.clients.Graphql({
-		session: res.locals.shopify.session
-	});
-	let result = {};
-	try {
-		// Create the delivery customization for the provided function ID
-		const response = await graphqlClient.query({
-			data: {
-				query: `{
-					shop {
-						primaryDomain {
-							url
-						}
-					}
-				}`,
-			},
-		});
-		result = response.body.data.shop?.primaryDomain;
-
-	} catch (error) {
-		// Handle errors thrown by the graphql client
-		if (!(error instanceof GraphqlQueryError)) {
-		throw error;
-		}
-		return res.status(500).send({ error: error.response });
-	}
-	return res.status(200).send(result);
-
-});
-
-// get storefrontAccessTokens
-app.get("/api/shop/storefrontAccessTokens", async (req, res) => {
-	const graphqlClient = new shopify.api.clients.Graphql({
-		session: res.locals.shopify.session
-	});
-	const { type, title } = req.query;
-	let result = {};
-	let storefrontAccessTokens = [];
-	try {
-		// Create the delivery customization for the provided function ID
-		const response = await graphqlClient.query({
-			data: {
-				query: `{
-					shop {
-						primaryDomain {
-							url
-						}
-						storefrontAccessTokens(first: 5) {
-							nodes {
-								id
-								accessToken
-								title
-								accessScopes {
-									description
-									handle
-								}
-							}
-						}
-					}
-				}`,
-			},
-		});
-		result = response.body.data.shop;
-		storefrontAccessTokens = result?.storefrontAccessTokens?.nodes;
-		storefrontAccessTokens = storefrontAccessTokens ? storefrontAccessTokens : [];
-		if (title && storefrontAccessTokens.length > 0) {
-			storefrontAccessTokens = storefrontAccessTokens.filter((storefront) => storefront?.title === title);
-		}
-		if (title && type == 'create' && storefrontAccessTokens.length === 0) {
-			const newToken = await storefrontAccessTokenCreate(
-				res.locals.shopify.session,
-				title,
-			);
-			storefrontAccessTokens = [newToken?.body?.data?.storefrontAccessTokenCreate?.storefrontAccessToken];
-		}
-		result.storefrontAccessTokens = storefrontAccessTokens;
-	} catch (error) {
-		// Handle errors thrown by the graphql client
-		if (!(error instanceof GraphqlQueryError)) {
-		throw error;
-		}
-		return res.status(500).send({ error: error.response });
-	}
-	return res.status(200).send(result);
-});
-// delete storefrontAccessTokens
-app.get("/api/storefrontAccessTokenDelete", async (req, res) => {
-	const graphqlClient = new shopify.api.clients.Graphql({
-		session: res.locals.shopify.session
-	});
-	const { id } = req.query;
-	let result = {};
-	try {
-		// Create the delivery customization for the provided function ID
-		const response = await graphqlClient.query({
-			data: {
-				query: `
-					mutation storefrontAccessTokenDelete($input: StorefrontAccessTokenDeleteInput!) {
-						storefrontAccessTokenDelete(input: $input) {
-							deletedStorefrontAccessTokenId
-							userErrors {
-								field
-								message
-							}
-						}
-					}
-				`,
-				variables: {
-					input: {
-						id: `gid://shopify/StorefrontAccessToken/${id}`,
-					}
-				},
-			},
-		});
-		result = response.body.data.storefrontAccessTokenDelete;
-	} catch (error) {
-		// Handle errors thrown by the graphql client
-		if (!(error instanceof GraphqlQueryError)) {
-		throw error;
-		}
-		return res.status(500).send({ error: error.response });
-	}
-	return res.status(200).send(result);
-});
+// // get storefrontAccessTokens
+// app.get("/api/shop/storefrontAccessTokens", async (req, res) => {
+// 	const graphqlClient = new shopify.api.clients.Graphql({
+// 		session: res.locals.shopify.session
+// 	});
+// 	const { type, title } = req.query;
+// 	let result = {};
+// 	let storefrontAccessTokens = [];
+// 	try {
+// 		// Create the delivery customization for the provided function ID
+// 		const response = await graphqlClient.query({
+// 			data: {
+// 				query: `{
+// 					shop {
+// 						primaryDomain {
+// 							url
+// 						}
+// 						storefrontAccessTokens(first: 5) {
+// 							nodes {
+// 								id
+// 								accessToken
+// 								title
+// 								accessScopes {
+// 									description
+// 									handle
+// 								}
+// 							}
+// 						}
+// 					}
+// 				}`,
+// 			},
+// 		});
+// 		result = response.body.data.shop;
+// 		storefrontAccessTokens = result?.storefrontAccessTokens?.nodes;
+// 		storefrontAccessTokens = storefrontAccessTokens ? storefrontAccessTokens : [];
+// 		if (title && storefrontAccessTokens.length > 0) {
+// 			storefrontAccessTokens = storefrontAccessTokens.filter((storefront) => storefront?.title === title);
+// 		}
+// 		if (title && type == 'create' && storefrontAccessTokens.length === 0) {
+// 			const newToken = await storefrontAccessTokenCreate(
+// 				res.locals.shopify.session,
+// 				title,
+// 			);
+// 			storefrontAccessTokens = [newToken?.body?.data?.storefrontAccessTokenCreate?.storefrontAccessToken];
+// 		}
+// 		result.storefrontAccessTokens = storefrontAccessTokens;
+// 	} catch (error) {
+// 		// Handle errors thrown by the graphql client
+// 		if (!(error instanceof GraphqlQueryError)) {
+// 		throw error;
+// 		}
+// 		return res.status(500).send({ error: error.response });
+// 	}
+// 	return res.status(200).send(result);
+// });
+// // delete storefrontAccessTokens
+// app.get("/api/storefrontAccessTokenDelete", async (req, res) => {
+// 	const graphqlClient = new shopify.api.clients.Graphql({
+// 		session: res.locals.shopify.session
+// 	});
+// 	const { id } = req.query;
+// 	let result = {};
+// 	try {
+// 		// Create the delivery customization for the provided function ID
+// 		const response = await graphqlClient.query({
+// 			data: {
+// 				query: `
+// 					mutation storefrontAccessTokenDelete($input: StorefrontAccessTokenDeleteInput!) {
+// 						storefrontAccessTokenDelete(input: $input) {
+// 							deletedStorefrontAccessTokenId
+// 							userErrors {
+// 								field
+// 								message
+// 							}
+// 						}
+// 					}
+// 				`,
+// 				variables: {
+// 					input: {
+// 						id: `gid://shopify/StorefrontAccessToken/${id}`,
+// 					}
+// 				},
+// 			},
+// 		});
+// 		result = response.body.data.storefrontAccessTokenDelete;
+// 	} catch (error) {
+// 		// Handle errors thrown by the graphql client
+// 		if (!(error instanceof GraphqlQueryError)) {
+// 		throw error;
+// 		}
+// 		return res.status(500).send({ error: error.response });
+// 	}
+// 	return res.status(200).send(result);
+// });
 app.use(shopify.cspHeaders());
 app.use(serveStatic(STATIC_PATH, { index: false }));
 
